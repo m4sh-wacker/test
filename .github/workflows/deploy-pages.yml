@@ -43,10 +43,21 @@ jobs:
       - name: Build
         run: npm run build
 
+      # CNAME claims decodebox.owasp.org, which only the canonical repository is
+      # entitled to. Shipping it from a fork points that fork's Pages site at a
+      # domain it does not control, and the result is a site that serves
+      # nothing. A fork should deploy to its own github.io URL instead, which
+      # works because the build uses relative asset paths.
+      - name: Drop the custom domain outside the canonical repository
+        if: github.repository != 'OWASP/DecodeBox'
+        run: rm -f dist/CNAME
+
       - name: Verify the build is static and complete
         run: |
           test -f dist/index.html || { echo "::error::dist/index.html is missing"; exit 1; }
-          test -f dist/CNAME || echo "::warning::dist/CNAME is missing - the custom domain will not be applied"
+          if [ "$GITHUB_REPOSITORY" = "OWASP/DecodeBox" ]; then
+            test -f dist/CNAME || echo "::warning::dist/CNAME is missing - the custom domain will not be applied"
+          fi
           # The application must never call out to a third party at runtime. This is a
           # coarse check, but it catches an accidental CDN reference before it ships.
           if grep -rIloE 'https?://(cdn|unpkg|jsdelivr)' dist --include='*.js' --include='*.html' | head -1 | grep -q .; then
