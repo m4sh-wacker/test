@@ -1,5 +1,16 @@
 version: 2
 
+# The aim is a small number of pull requests that are each worth reading.
+#
+# Ungrouped, this repository produces roughly ten a week: five action SHA bumps
+# that are individually meaningless, plus one per dependency. They pile up,
+# nobody reviews them, and real updates end up buried in the noise. So anything
+# routine is grouped into a single pull request, and only a major version — the
+# kind that can break the build and needs a person to look — arrives on its own.
+#
+# Security updates ignore this schedule and open immediately, which is the
+# behaviour worth keeping.
+
 updates:
   - package-ecosystem: npm
     directory: '/'
@@ -7,34 +18,47 @@ updates:
       interval: weekly
       day: monday
       time: '05:00'
-    open-pull-requests-limit: 5
+    # Enough room for the two grouped pull requests and a major or two beside
+    # them. Past that they are not being reviewed, only accumulated.
+    open-pull-requests-limit: 4
     labels:
       - dependencies
     commit-message:
       prefix: 'deps'
       prefix-development: 'deps-dev'
     groups:
-      # Group routine dev-tooling bumps into one PR to keep review volume sane.
+      # Everything routine in one pull request per side of the dependency line.
+      # Minors are grouped with patches deliberately: for tooling the difference
+      # between the two is mostly the publisher's judgement, and reviewing them
+      # separately has never once caught anything here.
       dev-tooling:
         dependency-type: development
         update-types:
           - minor
           - patch
-      # Runtime patches are grouped; majors and minors still arrive individually
-      # so each one gets looked at properly.
-      runtime-patches:
+      runtime:
         dependency-type: production
         update-types:
+          - minor
           - patch
 
   - package-ecosystem: github-actions
     directory: '/'
+    # Monthly, not weekly. Every action here is pinned to a SHA, so a bump is a
+    # 40-character diff with no behaviour to review, and codeql-action alone
+    # releases often enough to fill the branch list on its own.
     schedule:
-      interval: weekly
-      day: monday
-      time: '05:00'
+      interval: monthly
+    open-pull-requests-limit: 2
     labels:
       - dependencies
       - ci
     commit-message:
       prefix: 'ci'
+    groups:
+      # One pull request for all of them, majors included. An action major is
+      # still just a SHA and a tag comment; if it breaks, it breaks in this
+      # workflow's own run, which is where it would be caught either way.
+      actions:
+        patterns:
+          - '*'

@@ -1,8 +1,10 @@
 name: Deploy to GitHub Pages
 
-# The steps below turn Pages on if it is not already, and set its source to this
-# workflow, so a fresh repository or a fork needs no manual setup. The equivalent
-# by hand is Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+# Pages has to be set to build from a workflow for any of this to be served:
+# Settings -> Pages -> Build and deployment -> Source: GitHub Actions. A
+# repository that has never had Pages at all is switched on automatically below;
+# one already set to deploy from a branch cannot be changed from here, so the
+# build stops and says so rather than deploying into a void.
 
 on:
   push:
@@ -69,19 +71,37 @@ jobs:
       # is what you get by enabling it by hand to grab a URL. This workflow then
       # builds, uploads and deploys an artifact that is never served: the site
       # keeps returning the repository's own index.html, which points at
-      # /src/main.tsx and renders a blank page. Every check is green and the
-      # site is empty, which is a miserable thing to debug.
+      # /src/main.tsx and renders a blank page.
       #
-      # `configure-pages` will create a site but will not change an existing
-      # one's build type, so say it outright. Idempotent, and it degrades to a
-      # warning where the token is not allowed to.
-      - name: Make sure Pages builds from this workflow, not from a branch
+      # This workflow cannot correct that by itself. Changing the build type
+      # needs repository administration rights, and administration is not one of
+      # the permissions a workflow is able to request, so the default token is
+      # refused however it is configured. Reading the setting is allowed, so read
+      # it and stop here, naming the one setting a person has to change.
+      #
+      # Failing rather than warning is the point. The previous version of this
+      # step only warned, and a warning inside a green run is indistinguishable
+      # from nothing at all: the site was blank for an afternoon while every
+      # check passed.
+      - name: Check Pages builds from this workflow, not from a branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
-            || gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
-            || echo "::warning::Could not set the Pages build type. Set Settings -> Pages -> Build and deployment -> Source to 'GitHub Actions' by hand, or this deploy will not be served."
+          kind=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || echo unreadable)
+          case "$kind" in
+            workflow)
+              echo "Pages builds from a workflow."
+              ;;
+            unreadable)
+              # Also the answer for a repository with no Pages site yet, which
+              # the Configure Pages step below is about to create correctly.
+              echo "::notice::Could not read the Pages configuration. Continuing; the deployment is checked once it lands."
+              ;;
+            *)
+              echo "::error::Pages is set to '$kind', so it serves this repository's source rather than this build and the site renders blank. Open Settings -> Pages -> Build and deployment and set Source to 'GitHub Actions'. Nothing in this workflow is permitted to change it."
+              exit 1
+              ;;
+          esac
 
       # `enablement` turns Pages on for a repository that has never had it,
       # rather than failing the first push with "Get Pages site failed". A fork
@@ -111,3 +131,29 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+      # A deployment reports success once the artifact has been handed over.
+      # Whether the site then serves it is a separate question, and the answer
+      # was no for an entire afternoon while this workflow reported success. So
+      # ask the site, which is the only thing that actually knows.
+      - name: Verify the site serves this build
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            body=$(curl -fsSL --max-time 30 "$PAGE_URL" || true)
+            case "$body" in
+              *src/main.tsx*)
+                echo "::error::$PAGE_URL is serving this repository's source index.html instead of the build, so the page is blank. Pages is deploying from a branch: set Settings -> Pages -> Build and deployment -> Source to 'GitHub Actions'."
+                exit 1
+                ;;
+              *assets/index-*.js*)
+                echo "$PAGE_URL is serving the built application."
+                exit 0
+                ;;
+            esac
+            echo "Attempt $attempt did not see a settled page yet."
+            sleep 15
+          done
+          echo "::error::$PAGE_URL never returned a recognisable build. Open it and see what it is serving."
+          exit 1
