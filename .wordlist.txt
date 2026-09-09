@@ -285,6 +285,7 @@ octets
 offsets
 Ogg
 OpenLDAP
+OCR
 OpenPGP
 OpenSSL
 OpenType
