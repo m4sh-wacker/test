@@ -22,7 +22,7 @@ export const t = {
     library: 'Saved recipes',
     workspace: 'Workspace',
     report: 'Report',
-    ctf: 'CTF mode',
+    ctf: 'Search — what to try next',
   },
 
   layout: {
@@ -149,14 +149,25 @@ export const t = {
     privacy: 'Every layer above was decoded in this browser. Nothing was uploaded.',
   },
 
+  /*
+   * Labelled "Search" throughout, though the code still calls it ctf.
+   *
+   * The feature grew out of CTF work and the internals say so — the engine
+   * module, the store field, the tests. But "CTF" names an audience rather than
+   * a job, and the job is what a button has to say: this searches every layer
+   * for anything worth finding and ranks what to try next, which is as useful
+   * on an incident payload as on a competition one.
+   *
+   * The label lives here precisely so it can differ from the identifier.
+   */
   ctf: {
-    title: 'CTF mode',
-    tab: 'CTF',
+    title: 'Search',
+    tab: 'Search',
     subtitle: 'What to try next, ranked, with the reason for each.',
     emptyTitle: 'Nothing to work on yet',
     emptyDetail:
-      'Paste the challenge into the input. DecodeBox will peel what it can, search every layer ' +
-      'for a flag, and rank what is worth trying on what is left.',
+      'Paste something into the input. DecodeBox will peel what it can, search every layer for ' +
+      'anything worth finding, and rank what is worth trying on what is left.',
     working: 'Searching…',
     run: 'Search again',
     format: 'Flag format',

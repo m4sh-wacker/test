@@ -1,7 +1,8 @@
-import { Download, Github, Keyboard, Link2, Moon, Save, Sun } from 'lucide-react';
+import { Download, Github, Keyboard, Link2, Moon, Save, Search, Sun, Wrench } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { IconButton } from '../ui/primitives';
+import { cx } from '../ui/helpers';
 import { RailToggle } from './Workspace';
 
 /**
@@ -29,6 +30,9 @@ export function Header() {
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
   const setDialog = useStore((s) => s.setDialog);
+  const view = useStore((s) => s.view);
+  const setView = useStore((s) => s.setView);
+  const flagCount = useStore((s) => s.ctf?.flags.length ?? 0);
 
   const isDark =
     theme === 'dark' ||
@@ -72,13 +76,48 @@ export function Header() {
 
         <div className="flex shrink-0 items-center gap-0.5">
           {/*
-            The Report and CTF mode switches used to sit here. Both features are
-            intact — the views, the engine behind them and their tests are all
-            still in the tree, and `view` in the store still drives which one
-            renders. Only the way in was taken out, because three modes in the
-            header made the workspace look like a suite of tools when almost
-            everybody wants the one. Putting them back is this block again.
+            Two modes: transform it, or work out what it is.
+
+            The Report switch also sat here and is out for now — the view, its
+            engine and its tests are all still in the tree and `view` still
+            drives which one renders, so bringing it back is one more button.
           */}
+          <div className="me-1 flex items-center rounded-control border border-line p-0.5">
+            <button
+              type="button"
+              onClick={() => setView('workspace')}
+              aria-pressed={view === 'workspace'}
+              className={cx(
+                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
+                view === 'workspace' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
+              )}
+            >
+              <Wrench size={12} aria-hidden="true" />
+              <span className="max-sm:hidden">{t.header.workspace}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('ctf')}
+              aria-pressed={view === 'ctf'}
+              title={t.header.ctf}
+              className={cx(
+                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
+                view === 'ctf' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
+              )}
+            >
+              <Search size={12} aria-hidden="true" />
+              <span className="max-sm:hidden">{t.ctf.tab}</span>
+              {flagCount > 0 && (
+                <span
+                  className="rounded-full px-1.5 font-mono text-[10px] text-bg"
+                  style={{ backgroundColor: 'var(--green)' }}
+                >
+                  {flagCount}
+                </span>
+              )}
+            </button>
+          </div>
+
           <RailToggle />
 
           <span aria-hidden="true" className="mx-1 h-4 w-px bg-line" />

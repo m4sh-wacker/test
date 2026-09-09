@@ -19,11 +19,11 @@ import { confidenceColor, cx } from '../ui/helpers';
 import { Button, ConfidenceBar } from '../ui/primitives';
 
 /**
- * CTF mode.
+ * Search.
  *
  * The workspace answers "what does this become?" and the report answers "what
- * does this mean?". This answers the question somebody stuck on a challenge
- * actually has: what should I try next, and why would I bother?
+ * does this mean?". This answers the question somebody actually stuck has: what
+ * should I try next, and why would I bother?
  *
  * Every row is a claim with its evidence attached and a button that carries it
  * out. The evidence is not decoration — a ranked list with no reasons is a slot
