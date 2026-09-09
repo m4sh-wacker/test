@@ -33,6 +33,15 @@ function ensureWorker(): Worker | null {
   if (unavailable) return null;
   if (worker) return worker;
 
+  // A page opened from disk has an opaque origin and no second file to load a
+  // worker from — the standalone build is one HTML file by design. Asking
+  // anyway produces a console error on every large input for a worker that was
+  // never going to start, so do not ask.
+  if (typeof location !== 'undefined' && location.protocol === 'file:') {
+    unavailable = true;
+    return null;
+  }
+
   try {
     worker = new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' });
 

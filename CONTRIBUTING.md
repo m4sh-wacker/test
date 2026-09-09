@@ -57,6 +57,22 @@ If the operation can also participate in automatic detection, declare its detect
 (entropy range, character-set pattern, magic bytes). Be conservative — a criterion that matches
 too eagerly degrades detection quality for everyone.
 
+### The one rule that is easy to get wrong
+
+Data between operations is a **byte string**: one character per byte, always. Read the input with
+`asBytes`, return bytes with `bytesToLatin1`, and never call `bytesToText` or a bare `TextDecoder`
+from an operation.
+
+Both halves of that were broken once, and each break was invisible because it was symmetric.
+Reading with `toBytes` re-encodes as UTF-8, so `From Hex` of `1f8b` followed by `To Hex` returned
+`1f c2 8b` — the gzip magic number, destroyed, and the MD5 of every loaded file wrong. Returning
+`bytesToText` decodes valid UTF-8, which is not reversible: the bytes `C3 A9` came back as `é`,
+which the next step read as the single byte `E9`. Round trips inside DecodeBox passed the whole
+time, because the inverse made the same mistake backwards.
+
+Text becomes bytes exactly once, in the input pane. Bytes become text exactly once, in
+`renderText`, for the screen. Everything in between is bytes.
+
 ## Code standards
 
 - TypeScript strict mode. No `any` in application code.

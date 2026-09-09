@@ -17,6 +17,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "build:standalone": "tsc --noEmit && vite build --mode standalone",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest"

@@ -14,7 +14,7 @@ payloads, and the analysis report is complete.
 
 - **Engine:** 504 operations across data formats, ciphers, public-key cryptography, hashing,
   compression, networking, forensics, multimedia and extractors. Every one is covered by a
-  round-trip or a published known-answer test — 762 tests in all.
+  round-trip or a published known-answer test — 766 tests in all.
 - **Interface:** Three modes — a workspace for transforming, a report for understanding, and a
   CTF mode for working out what to try next.
 
@@ -103,8 +103,7 @@ issue for security reports.
 
 ```text
 DecodeBox/
-├── .github/workflows/   # CI, CodeQL, SBOM, docs quality, Pages deployment
-├── docs/                # Architecture, usage, deployment, roadmap (see below)
+├── .github/workflows/   # CI, CodeQL, SBOM, markdown quality, Pages deployment
 ├── public/              # Bundled fonts, favicon, CNAME
 ├── src/
 │   ├── engine/          # The analysis engine — the only half that knows about data
@@ -138,30 +137,37 @@ Requires Node.js 20 or later. CI builds on 20 and 22; `.nvmrc` pins 22 for devel
 ```bash
 npm install
 npm run dev     # development server
-npm run test    # 762 tests
-npm run build   # static bundle in dist/
+npm run test    # 766 tests
+npm run build   # static site in dist/
 ```
 
 The build output is fully static — no runtime, no server, no environment variables. Any static
-host will serve it, including a local `file://` open, which is what makes it usable on an
-air-gapped machine.
+host will serve it.
 
-### Documentation
+### One File, No Install
 
-| Document | What it covers |
-| --- | --- |
-| [docs/USAGE.md](docs/USAGE.md) | Worked examples, CTF mode, flow control, files, keyboard |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The seam, detection, analysis, the executor |
-| [docs/WRITING-AN-OPERATION.md](docs/WRITING-AN-OPERATION.md) | Adding a format, end to end |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Building, hosting, offline and air-gapped use |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | What is planned, and what is deliberately not |
+```bash
+npm run build:standalone   # dist-standalone/index.html
+```
+
+That is the whole application in a single 1.1 MB HTML file: the interface, all 504 operations,
+the fonts, the styles. Double-click it and it runs. No server, no npm, no network, nothing to
+install — which is the point on an air-gapped machine, where getting a build toolchain in is
+harder than getting one file in.
+
+It has to be one file rather than a folder. A browser refuses to load an ES module from a
+`file://` URL — the origin is opaque, so the request fails its CORS check — which means the
+ordinary `dist/` folder opened from disk comes up blank. Everything inlined leaves no request to
+fail. The only thing given up is the Web Worker, which needs a second file by definition, so a
+standalone build stays on the main thread for very large inputs and is identical otherwise.
 
 ### How to Contribute
 
 Contributions are welcome, particularly in these areas:
 
 - **Operations:** New transformations. One self-contained module, one test file, no UI changes.
-  [docs/WRITING-AN-OPERATION.md](docs/WRITING-AN-OPERATION.md) walks through a whole one.
+  [CONTRIBUTING.md](CONTRIBUTING.md) has the shape of one, and the byte rule that is easy to get
+  wrong.
 - **Detection:** Better heuristics — but read the section on false positives first. A confident
   wrong answer is worse than no answer.
 - **Testing:** Paste real payloads at it and report anything it gets wrong — especially anything

@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
@@ -23,88 +25,218 @@ import react from '@vitejs/plugin-react';
  *   <meta> element, and GitHub Pages cannot set response headers. A deployment
  *   behind a proxy should add it there. See SECURITY.md.
  */
+const CSP_META = /\s*<meta http-equiv="Content-Security-Policy"[^>]*>/;
+
+/**
+ * Builds the policy from the markup as it finally stands.
+ *
+ * Every inline script is hashed, so the list can never go stale against the
+ * scripts actually present — which matters most in the standalone build, where
+ * the whole application becomes one more inline script after this file's other
+ * plugin has run.
+ */
+function withCsp(html: string): string {
+  const inlineScripts = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)];
+  const hashes = inlineScripts.map(
+    (match) => `'sha256-${createHash('sha256').update(match[1] ?? '').digest('base64')}'`,
+  );
+
+  const policy = [
+    "default-src 'none'",
+    `script-src 'self' ${hashes.join(' ')}`.trim(),
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
+    "img-src 'self' data: blob:",
+    "connect-src 'none'",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'none'",
+  ].join('; ');
+
+  return html
+    .replace(CSP_META, '')
+    .replace(
+      '<head>',
+      `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`,
+    );
+}
+
 function cspPlugin(): Plugin {
   return {
     name: 'decodebox-csp',
     apply: 'build',
-    transformIndexHtml: {
-      order: 'post',
-      handler(html) {
-        const inlineScripts = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)];
-        const hashes = inlineScripts.map(
-          (match) => `'sha256-${createHash('sha256').update(match[1] ?? '').digest('base64')}'`,
-        );
+    transformIndexHtml: { order: 'post', handler: withCsp },
+  };
+}
 
-        const policy = [
-          "default-src 'none'",
-          `script-src 'self' ${hashes.join(' ')}`.trim(),
-          "style-src 'self' 'unsafe-inline'",
-          "font-src 'self'",
-          "img-src 'self' data: blob:",
-          "connect-src 'none'",
-          "worker-src 'self' blob:",
-          "object-src 'none'",
-          "base-uri 'none'",
-          "form-action 'none'",
-        ].join('; ');
+function escapeForRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-        return html.replace(
-          '<head>',
-          `<head>\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`,
-        );
-      },
+function dataUri(file: string, mime: string): string {
+  return `data:${mime};base64,${readFileSync(file).toString('base64')}`;
+}
+
+/**
+ * Folds the whole application into a single HTML file.
+ *
+ * The reason is the air-gapped case, and the honest position is that it did not
+ * work before. A normal build is an index.html plus module scripts, and a
+ * browser will not load an ES module from a `file://` URL — the origin is
+ * opaque, so the request fails the CORS check and the page comes up blank.
+ * "Open it straight from disk" was a claim the build could not honour.
+ *
+ * One file with everything inlined has no request left to fail. Double-click it
+ * and it runs: no server, no npm, no network, nothing to install.
+ *
+ * The Web Worker is the one thing lost. It needs a separate script by
+ * definition, so from a single file it cannot start — which the worker client
+ * already handles by falling back to the main thread. A standalone build is
+ * therefore single-threaded on very large inputs and identical otherwise.
+ */
+function standalonePlugin(): Plugin {
+  return {
+    name: 'decodebox-standalone',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const html = Object.values(bundle).find(
+        (file) => file.fileName.endsWith('.html') && file.type === 'asset',
+      );
+      if (!html || html.type !== 'asset') return;
+
+      let source = String(html.source);
+
+      for (const [name, file] of Object.entries(bundle)) {
+        const escaped = escapeForRegExp(file.fileName);
+
+        if (file.type === 'chunk' && file.isEntry) {
+          // `__VITE_PRELOAD__` is a placeholder Vite fills in with the chunks a
+          // dynamic import depends on. It resolves that list while laying the
+          // chunks out — which never happens here, because the imports were
+          // inlined and there are no chunks. Left alone it reaches the browser
+          // as a reference to nothing and the page dies on load. An empty list
+          // is not a workaround: there really is nothing to preload.
+          const code = file.code.replace(/__VITE_PRELOAD__/g, '[]');
+
+          // Kept as a module so `import.meta` still resolves. There is nothing
+          // left for it to import: the dynamic engine chunk was merged in by
+          // `inlineDynamicImports` before this ran.
+          source = source.replace(
+            new RegExp(`<script[^>]*src="[^"]*${escaped}"[^>]*></script>`),
+            () => `<script type="module">\n${code}\n</script>`,
+          );
+          delete bundle[name];
+        } else if (file.type === 'asset' && file.fileName.endsWith('.css')) {
+          // The fonts live in public/, which Vite copies verbatim rather than
+          // processing: the URL is rewritten to point at the copy but the file
+          // is never inlined however high assetsInlineLimit goes. Left alone,
+          // a single-file build asks for `../fonts/…` next to itself and
+          // renders in whatever the fallback stack offers.
+          //
+          // Matched on the trailing filename rather than a leading slash,
+          // because by this point Vite has already made the path relative.
+          const css = String(file.source).replace(
+            /url\(['"]?[^'")]*fonts\/([^'")/]+)['"]?\)/g,
+            (_match, fontFile: string) =>
+              `url(${dataUri(resolve('public/fonts', fontFile), 'font/woff2')})`,
+          );
+          source = source.replace(
+            new RegExp(`<link[^>]*href="[^"]*${escaped}"[^>]*>`),
+            () => `<style>\n${css}\n</style>`,
+          );
+          delete bundle[name];
+        } else if (file.fileName.includes('worker')) {
+          // Nothing can load it from a single file, and the client falls back
+          // to the main thread when it cannot start. Shipping it would leave a
+          // second file next to the one that is supposed to be the whole app.
+          delete bundle[name];
+        }
+      }
+
+      // publicDir is not copied in this mode, so the icon has to come along too.
+      source = source.replace(
+        /href="[^"]*favicon\.svg"/,
+        () => `href="${dataUri(resolve('public/favicon.svg'), 'image/svg+xml')}"`,
+      );
+
+      // The policy has to be rebuilt now, not when the CSP plugin ran: that was
+      // during transformIndexHtml, before the application became an inline
+      // script, so its hash list covered only the little theme script and the
+      // browser would have blocked the entire app.
+      html.source = withCsp(source);
     },
   };
 }
 
-export default defineConfig({
-  plugins: [react(), cspPlugin()],
+export default defineConfig(({ mode }) => {
+  const standalone = mode === 'standalone';
 
-  // Relative asset paths, so the same build works on a custom domain
-  // (decodebox.owasp.org), on a project page (user.github.io/DecodeBox), and
-  // opened straight from disk in an air-gapped environment.
-  base: './',
+  return {
+    plugins: [react(), ...(standalone ? [standalonePlugin()] : []), cspPlugin()],
 
-  build: {
-    target: 'es2022',
-    sourcemap: false,
-    /*
-     * The engine loads as its own chunk, split at the dynamic import in
-     * src/engine/index.ts, so the interface paints before five hundred
-     * operations have finished downloading.
-     *
-     * That chunk is deliberately not split further. Every operation is reachable
-     * from the search box, so a per-category split would trade one download for
-     * a stall the first time somebody scrolls the list — and this tool is meant
-     * to work from a file:// URL on an air-gapped machine, where a waterfall of
-     * small requests is worse than one large one. The limit is raised to cover
-     * it, and only it: if the *shell* ever crosses this line, that is a
-     * regression and the warning should fire.
-     */
-    chunkSizeWarningLimit: 700,
-  },
+    // Relative asset paths, so the same build works on a custom domain
+    // (decodebox.owasp.org) and on a project page (user.github.io/DecodeBox).
+    base: './',
 
-  server: {
-    port: 5173,
-    open: true,
-  },
+    build: {
+      target: 'es2022',
+      sourcemap: false,
+      outDir: standalone ? 'dist-standalone' : 'dist',
+      // One file means one file: no 404 page, no CNAME, no loose fonts.
+      copyPublicDir: !standalone,
 
-  preview: {
-    port: 4173,
-  },
+      // Everything in one file, fonts included, or nothing can be inlined.
+      assetsInlineLimit: standalone ? Number.MAX_SAFE_INTEGER : 4096,
+      cssCodeSplit: !standalone,
+      rollupOptions: standalone ? { output: { inlineDynamicImports: true } } : {},
 
-  test: {
-    /*
-     * The default is five seconds, which is not enough for the first call in a
-     * test file.
-     *
-     * The engine is a separate chunk, reached through a dynamic import, so the
-     * first `await` on a facade function in any file loads six hundred
-     * kilobytes of operations before it can answer. That cost is real but it is
-     * paid once per file, and it is not what any of these tests are measuring —
-     * timing out on it would be the build punishing us for the code splitting
-     * rather than for anything being slow.
-     */
-    testTimeout: 30000,
-  },
+      // Without this the page dies on `__VITE_PRELOAD__ is not defined`. The
+      // preload helper is injected for dynamic imports and resolved when the
+      // chunks are laid out; with the imports inlined there are no chunks to
+      // preload, and the placeholder survives into the output as a reference to
+      // nothing. There is also nothing left to preload, so turning it off is
+      // the honest fix rather than a workaround.
+      modulePreload: standalone ? false : undefined,
+
+      /*
+       * The engine loads as its own chunk, split at the dynamic import in
+       * src/engine/index.ts, so the interface paints before five hundred
+       * operations have finished downloading.
+       *
+       * That chunk is deliberately not split further. Every operation is
+       * reachable from the search box, so a per-category split would trade one
+       * download for a stall the first time somebody scrolls the list. The
+       * limit is raised to cover it, and only it: if the *shell* ever crosses
+       * this line, that is a regression and the warning should fire. The
+       * standalone build is one file by design, so the warning is off there.
+       */
+      chunkSizeWarningLimit: standalone ? 100_000 : 700,
+    },
+
+    server: {
+      port: 5173,
+      open: true,
+    },
+
+    preview: {
+      port: 4173,
+    },
+
+    test: {
+      /*
+       * The default is five seconds, which is not enough for the first call in
+       * a test file.
+       *
+       * The engine is a separate chunk, reached through a dynamic import, so
+       * the first `await` on a facade function in any file loads six hundred
+       * kilobytes of operations before it can answer. That cost is real but it
+       * is paid once per file, and it is not what any of these tests are
+       * measuring — timing out on it would be the build punishing us for the
+       * code splitting rather than for anything being slow.
+       */
+      testTimeout: 30000,
+    },
+  };
 });
