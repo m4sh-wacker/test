@@ -14,6 +14,7 @@ export const t = {
   },
 
   header: {
+    download: 'Download DecodeBox',
     theme: 'Switch theme',
     github: 'Source on GitHub',
     help: 'Keyboard shortcuts',
@@ -229,6 +230,30 @@ export const t = {
     lines: 'lines',
     steps: 'steps',
     privacy: 'Everything runs in your browser — nothing is uploaded',
+  },
+
+  download: {
+    title: 'Download DecodeBox',
+    lead:
+      'The whole application in a single HTML file. Save it, double-click it, and it runs — no ' +
+      'server, no install, no network. It is the same build as this page.',
+    privacy:
+      'DecodeBox has no server-side component, and no operation in it makes a network request. ' +
+      'That is true of this page and of the copy you download, and you can confirm it in your ' +
+      'browser’s network tab.',
+    airgap:
+      'Useful where getting a build toolchain onto a machine is harder than getting one file onto ' +
+      'it — an isolated network, a locked-down laptop, an incident-response box.',
+    stale:
+      'A downloaded copy never updates itself. It will not get fixes or new operations until you ' +
+      'download it again.',
+    worker:
+      'One difference from this page: a single file cannot start a Web Worker, so very large ' +
+      'inputs are processed on the main thread and the tab may pause while they run.',
+    version: 'Version',
+    built: 'Built',
+    button: 'Download the file',
+    size: 'about 1 MB',
   },
 
   help: {

@@ -10,6 +10,7 @@ import { CtfView } from './components/ctf/CtfView';
 import { HelpDialog } from './components/ui/HelpDialog';
 import { ShareDialog } from './components/ui/ShareDialog';
 import { RecipeLibrary } from './components/ui/RecipeLibrary';
+import { DownloadDialog } from './components/ui/DownloadDialog';
 
 export default function App() {
   const loadOperations = useStore((s) => s.loadOperations);
@@ -34,6 +35,7 @@ export default function App() {
       {dialog === 'help' && <HelpDialog />}
       {dialog === 'share' && <ShareDialog />}
       {dialog === 'library' && <RecipeLibrary />}
+      {dialog === 'download' && <DownloadDialog />}
     </div>
   );
 }

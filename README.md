@@ -147,14 +147,18 @@ host will serve it.
 
 ### One File, No Install
 
-```bash
-npm run build:standalone   # dist-standalone/index.html
-```
+There is a **Download DecodeBox** button in the header of the running application. It hands you
+`decodebox.html`: the whole thing in a single 1.1 MB file — the interface, all 504 operations, the
+fonts, the styles. Double-click it and it runs. No server, no npm, no network, nothing to install,
+which is the point on an air-gapped machine where getting a build toolchain in is harder than
+getting one file in.
 
-That is the whole application in a single 1.1 MB HTML file: the interface, all 504 operations,
-the fonts, the styles. Double-click it and it runs. No server, no npm, no network, nothing to
-install — which is the point on an air-gapped machine, where getting a build toolchain in is
-harder than getting one file in.
+`npm run build` produces it alongside the site, so any deployment serves it:
+
+```text
+dist/index.html       the site
+dist/decodebox.html   the same build, in one file
+```
 
 It has to be one file rather than a folder. A browser refuses to load an ES module from a
 `file://` URL — the origin is opaque, so the request fails its CORS check — which means the

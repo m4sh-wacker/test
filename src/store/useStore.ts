@@ -33,7 +33,7 @@ import {
 type Theme = 'light' | 'dark' | 'system';
 export type MobilePane = 'operations' | 'recipe' | 'input' | 'output';
 export type View = 'workspace' | 'report' | 'ctf';
-export type Dialog = 'help' | 'share' | 'library' | null;
+export type Dialog = 'help' | 'share' | 'library' | 'download' | null;
 
 interface State {
   input: string;

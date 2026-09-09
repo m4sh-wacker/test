@@ -74,6 +74,12 @@ function escapeForRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Read rather than imported: esbuild, which loads this config, does not honour
+// a named import from a JSON module.
+const { version } = JSON.parse(readFileSync(resolve('package.json'), 'utf8')) as {
+  version: string;
+};
+
 function dataUri(file: string, mime: string): string {
   return `data:${mime};base64,${readFileSync(file).toString('base64')}`;
 }
@@ -166,6 +172,11 @@ function standalonePlugin(): Plugin {
       // script, so its hash list covered only the little theme script and the
       // browser would have blocked the entire app.
       html.source = withCsp(source);
+
+      // Not index.html: it is written into the same directory as the site, and
+      // it is what the download button points at. The name is also what lands
+      // in somebody's Downloads folder, where 'index.html' means nothing.
+      html.fileName = 'decodebox.html';
     },
   };
 }
@@ -176,6 +187,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), ...(standalone ? [standalonePlugin()] : []), cspPlugin()],
 
+    // Shown in the download dialog, so somebody holding a copy can tell which
+    // one it is. A standalone build never updates itself, which makes "when is
+    // this from" the first question anyone asks of it.
+    define: {
+      __APP_VERSION__: JSON.stringify(version),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString().replace(/\.\d+Z$/, 'Z')),
+    },
+
     // Relative asset paths, so the same build works on a custom domain
     // (decodebox.owasp.org) and on a project page (user.github.io/DecodeBox).
     base: './',
@@ -183,7 +202,12 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'es2022',
       sourcemap: false,
-      outDir: standalone ? 'dist-standalone' : 'dist',
+      // The standalone file is written beside the site rather than into a
+      // directory of its own, so the deployed page has something to link to.
+      outDir: 'dist',
+      // The normal build empties dist. The standalone one runs afterwards and
+      // must not wipe what just landed there.
+      emptyOutDir: !standalone,
       // One file means one file: no 404 page, no CNAME, no loose fonts.
       copyPublicDir: !standalone,
 

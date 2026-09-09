@@ -15,9 +15,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build --mode standalone",
     "preview": "vite preview",
-    "build:standalone": "tsc --noEmit && vite build --mode standalone",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest"

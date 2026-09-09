@@ -1,4 +1,15 @@
-import { Flag, Github, Keyboard, Link2, Moon, Save, ShieldAlert, Sun, Wrench } from 'lucide-react';
+import {
+  Download,
+  Flag,
+  Github,
+  Keyboard,
+  Link2,
+  Moon,
+  Save,
+  ShieldAlert,
+  Sun,
+  Wrench,
+} from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { IconButton } from '../ui/primitives';
@@ -71,6 +82,18 @@ export function Header() {
             <span className="ms-1.5 text-text">DecodeBox</span>
           </span>
           <span className="hidden text-micro text-faint sm:inline">{t.app.tagline}</span>
+
+          {/* Beside the name rather than in the icon strip on the right. The
+              offer is "take this away with you", which belongs with the
+              identity of the thing, not among the tools that act on the data. */}
+          <button
+            type="button"
+            onClick={() => setDialog('download')}
+            className="ms-2 hidden items-center gap-1.5 self-center rounded-control px-2 py-1 text-micro text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text sm:inline-flex"
+          >
+            <Download size={12} aria-hidden="true" />
+            {t.header.download}
+          </button>
         </div>
 
         <div className="flex shrink-0 items-center gap-0.5">
