@@ -353,10 +353,12 @@ function fromIdentification(site: Site): Hint[] {
       kind: 'identify',
       title: found.oneWay
         ? `This is ${best.name} — crack it, do not decode it`
-        : `This is ${best.name}`,
+        : `Identified as ${best.name}`,
       reason: found.oneWay
         ? `${best.reason}. One-way, so the move is a wordlist or a lookup, not a transformation.`
-        : `${best.reason}.${best.context ? ` ${best.context}.` : ''}`,
+        : // The contexts are written as whole sentences and mostly punctuate
+          // themselves, so only add the stop when one is actually missing.
+          `${best.reason}.${best.context ? ` ${best.context.replace(/\.?$/, '.')}` : ''}`,
       confidence: best.confidence,
       depth: site.depth,
       path: site.path,

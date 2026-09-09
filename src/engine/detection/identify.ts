@@ -1,6 +1,32 @@
-import type { HashIdentification } from '../types';
+import type { HashIdentification, HashMatch } from '../types';
+import { asBytes } from '../core/bytes';
+import { matchSignature } from '../core/signatures';
 import { identifyHash } from './hashes';
 import { identifyArtefact, isTerminal } from './artefacts';
+
+/**
+ * What the bytes are, when they are a file.
+ *
+ * The most common thing anyone drops into this tool is a file, and until this
+ * existed the answer was "Plain text" — while an operation elsewhere in the
+ * catalogue could name fifty formats from their first bytes. A magic number is
+ * about as close to proof as identification gets, so it is scored accordingly.
+ */
+function identifyFile(input: string): HashMatch | null {
+  const bytes = asBytes(input);
+  if (bytes.length < 4) return null;
+
+  const signature = matchSignature(bytes);
+  if (!signature) return null;
+
+  const spaced = signature.magic.toUpperCase().replace(/(..)/g, '$1 ').trim();
+  return {
+    name: signature.description,
+    confidence: 0.97,
+    reason: `The file signature ${spaced}${signature.offset ? ` at offset ${signature.offset}` : ''}`,
+    context: `A .${signature.extension} file, identified by its bytes rather than by a name.`,
+  };
+}
 
 /**
  * Names what the input *is*, for the cases where that is the answer.
@@ -16,17 +42,26 @@ import { identifyArtefact, isTerminal } from './artefacts';
 export function identify(input: string): HashIdentification | null {
   const hash = identifyHash(input);
   const artefacts = identifyArtefact(input);
-  if (!hash && artefacts.length === 0) return null;
+  const file = identifyFile(input);
+  if (!hash && artefacts.length === 0 && !file) return null;
 
-  const matches = [...(hash?.matches ?? []), ...artefacts]
+  const matches = [...(hash?.matches ?? []), ...artefacts, ...(file ? [file] : [])]
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, 5);
 
   const best = matches[0];
   return {
     matches,
-    summary: hash?.summary ?? `${input.trim().length} characters`,
-    oneWay: hash?.oneWay ?? (best ? isTerminal(best.name) : false),
+    summary: file
+      ? `${asBytes(input).length} bytes`
+      : (hash?.summary ?? `${input.trim().length} characters`),
+    oneWay: hash?.oneWay ?? false,
+    // A file is where the chain ends: the bytes are the content, not a wrapper
+    // around it. Anything that genuinely unwraps — gzip, a ZIP — is decoded
+    // before identification is ever asked, because identification runs only
+    // after decoding has run out of candidates.
+    terminal:
+      (hash?.oneWay ?? false) || best === file || (best ? isTerminal(best.name) : false),
   };
 }
 
@@ -49,7 +84,7 @@ export function terminalIdentification(input: string): HashIdentification | null
   const best = found?.matches[0];
   if (!found || !best) return null;
 
-  if (found.oneWay && best.confidence >= ONE_WAY_FLOOR) return found;
-  if (isTerminal(best.name) && best.confidence >= ARTEFACT_FLOOR) return found;
-  return null;
+  if (!found.terminal) return null;
+  if (found.oneWay) return best.confidence >= ONE_WAY_FLOOR ? found : null;
+  return best.confidence >= ARTEFACT_FLOOR ? found : null;
 }

@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { autoDecode, describeChain, terminusOf, terminusName, lastLayer } from './index';
 import { terminalIdentification } from './detection/identify';
@@ -122,5 +123,51 @@ describe('terminalIdentification', () => {
     // JSON is identifiable but not terminal — it has content inside it.
     expect(terminalIdentification('{"user":"admin","role":"root"}')).toBeNull();
     expect(terminalIdentification('nothing in particular here')).toBeNull();
+  });
+});
+
+/**
+ * The commonest thing anyone drops into this tool is a file, and the commonest
+ * thing anyone pastes is the Base64 of one. Both used to end at "Plain text":
+ * detection had no idea what a PNG was, so a dropped picture was unrecognised
+ * and a Base64 picture would not even decode — the decoder saw binary noise and
+ * scored it below the threshold.
+ */
+describe('files', () => {
+  /** A real 1x1 PNG, the smallest one that is still a valid file. */
+  const PNG_B64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const PNG = Buffer.from(PNG_B64, 'base64').toString('latin1');
+
+  it('names a file that was dropped in, rather than calling it plain text', async () => {
+    const root = await autoDecode(PNG);
+    expect(describeChain(root)).toBe('PNG image');
+    expect(terminusOf(root)?.reason).toBe('identified');
+    expect(terminusOf(root)?.identification?.matches[0]?.reason).toMatch(/89 50 4E 47/);
+  });
+
+  it('decodes the Base64 of a picture, because it sees the file inside', async () => {
+    const root = await autoDecode(PNG_B64);
+    expect(describeChain(root)).toBe('Base64 → PNG image');
+    expect(lastLayer(root).output).toBe(PNG);
+  });
+
+  it('does not call a picture one-way', async () => {
+    // 'nothing further decodes' and 'cryptographically irreversible' are
+    // different claims. Telling somebody their PNG is a one-way hash, or
+    // offering to crack it, is worse than saying nothing.
+    const found = terminalIdentification(PNG)!;
+    expect(found.terminal).toBe(true);
+    expect(found.oneWay).toBe(false);
+    expect(terminusOf(await autoDecode(PNG))?.note).not.toMatch(/one-way/);
+  });
+
+  it('still unwraps a container rather than just naming it', async () => {
+    // gzip has a signature too, but something decodes it — and identification
+    // is only asked after decoding runs out, so the decode still wins.
+    const gzipped = gzipSync(Buffer.from('The quick brown fox jumps over the lazy dog.'));
+    const root = await autoDecode(gzipped.toString('latin1'));
+    expect(describeChain(root)).toMatch(/gzip/i);
+    expect(lastLayer(root).output).toContain('quick brown fox');
   });
 });

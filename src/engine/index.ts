@@ -128,6 +128,8 @@ export { RULE_COUNT } from './analysis/findings';
 export { KIND_ORDER } from './ctf/types';
 export { formatBytes, truncate, renderText } from './core/bytes';
 export { imageMimeOf } from './core/imageMime';
+export { fileSignatureOf } from './core/signatures';
+export type { Signature } from './core/signatures';
 export { CHARSET_NAMES, ENCODABLE_CHARSET_NAMES } from './core/charsets';
 
 export type { AutoDecodeOptions } from './detection/autoDecode';

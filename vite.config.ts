@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { defineConfig, type Plugin } from 'vite';
+import type { Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 /**
@@ -90,5 +91,20 @@ export default defineConfig({
 
   preview: {
     port: 4173,
+  },
+
+  test: {
+    /*
+     * The default is five seconds, which is not enough for the first call in a
+     * test file.
+     *
+     * The engine is a separate chunk, reached through a dynamic import, so the
+     * first `await` on a facade function in any file loads six hundred
+     * kilobytes of operations before it can answer. That cost is real but it is
+     * paid once per file, and it is not what any of these tests are measuring —
+     * timing out on it would be the build punishing us for the code splitting
+     * rather than for anything being slow.
+     */
+    testTimeout: 30000,
   },
 });

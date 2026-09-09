@@ -65,9 +65,12 @@ function settle(value: string, lastStep: RecipeStep | undefined): Terminus {
   return {
     reason: 'identified',
     complete: true,
+    // 'Identified as' rather than 'This is a', because the names run from 'MD5'
+    // to 'PNG image' to 'UUID' and no article fits all of them — 'a MP3 audio'
+    // and 'This is PNG image' are each wrong in their own way.
     note: found.oneWay
       ? `This is ${best.name}, which is one-way. There is nothing left to decode.`
-      : `This is ${best.name}. It does not decode into anything further.`,
+      : `Identified as ${best.name}. It does not decode into anything further.`,
     identification: found,
   };
 }

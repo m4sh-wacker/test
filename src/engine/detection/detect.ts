@@ -1,5 +1,6 @@
 import type { Candidate, Evidence, RecipeStep } from '../types';
 import { detectableOperations } from '../operations/registryAccess';
+import { matchSignature } from '../core/signatures';
 import { utf16leRatio } from '../operations/dataFormat';
 import { bruteForce } from './bruteForce';
 import type { Operation } from '../operations/types';
@@ -131,6 +132,24 @@ function lookahead(output: string, excludeId: string, bytes: Uint8Array): Eviden
         weight: 0.95,
       };
     }
+  }
+
+  // A file signature in the output is the strongest lookahead there is, and it
+  // is what makes the commonest paste in the world work: the Base64 of a
+  // picture. Decoding that produces binary, which every other signal here reads
+  // as noise, so without this the chain scored below the threshold and the
+  // interface said "Plain text" over a perfectly good PNG.
+  const signature = matchSignature(bytes);
+  if (signature) {
+    const spaced = signature.magic.toUpperCase().replace(/(..)/g, '$1 ').trim();
+    return {
+      label: `contains a ${signature.description}`,
+      detail:
+        `The decoded bytes begin with ${spaced}, the file signature for ${signature.description}. ` +
+        'Finding a whole file inside the result is about as strong as evidence gets that this ' +
+        'layer was decoded correctly.',
+      weight: 0.97,
+    };
   }
 
   const trimmed = output.trim();

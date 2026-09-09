@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowUp, Check, Copy, Download, Maximize2, Minimize2, WrapText } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { formatBytes, imageMimeOf, renderText } from '../../engine';
+import { fileSignatureOf, formatBytes, imageMimeOf, renderText } from '../../engine';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { IconButton } from '../ui/primitives';
@@ -74,11 +74,19 @@ export function OutputPane() {
     // that has been through a UTF-8 encoder is not a PNG any more.
     const bytes = new Uint8Array(output.length);
     for (let i = 0; i < output.length; i++) bytes[i] = output.charCodeAt(i) & 0xff;
-    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+
+    // Named from what the bytes actually are. Decoding a Base64 picture and
+    // being handed 'decodebox-output.txt' means renaming it by hand before
+    // anything will open it, which is a silly last step for a tool that knew
+    // perfectly well it had just produced a PNG.
+    const signature = fileSignatureOf(output);
+    const extension = signature ? signature.extension : json ? 'json' : 'txt';
+
+    const blob = new Blob([bytes], { type: signature?.mime ?? 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'decodebox-output.txt';
+    link.download = `decodebox-output.${extension}`;
     link.click();
     URL.revokeObjectURL(url);
   };

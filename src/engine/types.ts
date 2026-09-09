@@ -88,8 +88,16 @@ export interface HashIdentification {
   matches: HashMatch[];
   /** Shape summary shown alongside the matches. */
   summary: string;
-  /** True when the input is one-way, so there is nothing to decode. */
+  /**
+   * True when the value is cryptographically irreversible — a digest.
+   *
+   * Distinct from `terminal` on purpose. A PNG ends a decoding chain without
+   * being one-way in any sense, and telling somebody their picture is a
+   * one-way hash is worse than saying nothing.
+   */
   oneWay: boolean;
+  /** True when nothing further decodes out of this, whatever the reason. */
+  terminal?: boolean;
 }
 
 /**
