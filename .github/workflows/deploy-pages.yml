@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
-# The Configure Pages step below turns Pages on if it is not already, so a fresh
-# repository needs no manual setup. Setting the source by hand still works
-# (Settings -> Pages -> Build and deployment -> Source: GitHub Actions).
+# The steps below turn Pages on if it is not already, and set its source to this
+# workflow, so a fresh repository or a fork needs no manual setup. The equivalent
+# by hand is Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
 
 on:
   push:
@@ -64,6 +64,24 @@ jobs:
             echo "::error::Found a CDN reference in the build output. DecodeBox must make no runtime network requests."
             exit 1
           fi
+
+      # Pages remembers how it was first switched on, and "deploy from a branch"
+      # is what you get by enabling it by hand to grab a URL. This workflow then
+      # builds, uploads and deploys an artifact that is never served: the site
+      # keeps returning the repository's own index.html, which points at
+      # /src/main.tsx and renders a blank page. Every check is green and the
+      # site is empty, which is a miserable thing to debug.
+      #
+      # `configure-pages` will create a site but will not change an existing
+      # one's build type, so say it outright. Idempotent, and it degrades to a
+      # warning where the token is not allowed to.
+      - name: Make sure Pages builds from this workflow, not from a branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
+            || gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
+            || echo "::warning::Could not set the Pages build type. Set Settings -> Pages -> Build and deployment -> Source to 'GitHub Actions' by hand, or this deploy will not be served."
 
       # `enablement` turns Pages on for a repository that has never had it,
       # rather than failing the first push with "Get Pages site failed". A fork
