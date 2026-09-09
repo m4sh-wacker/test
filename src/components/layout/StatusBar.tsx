@@ -1,5 +1,5 @@
 import { useStore } from '../../store/useStore';
-import { encodeInput, formatBytes } from '../../engine';
+import { formatBytes } from '../../engine';
 import { t } from '../../i18n/en';
 
 function Dot({ state }: { state: 'idle' | 'busy' | 'error' }) {
@@ -18,15 +18,12 @@ function Dot({ state }: { state: 'idle' | 'busy' | 'error' }) {
 }
 
 export function StatusBar() {
-  const input = useStore((s) => s.input);
-  const inputEncoding = useStore((s) => s.inputEncoding);
   const result = useStore((s) => s.bakeResult);
   const baking = useStore((s) => s.baking);
   const analysing = useStore((s) => s.analysing);
   const steps = useStore((s) => s.steps);
   const pausedAt = useStore((s) => s.pausedAt);
 
-  const lines = input.length === 0 ? 0 : input.split('\n').length;
   const state = result?.error ? 'error' : baking || analysing ? 'busy' : 'idle';
   const label =
     state === 'busy'
@@ -44,12 +41,9 @@ export function StatusBar() {
         {label}
       </span>
 
-      <span className="hidden sm:inline">
-        {t.status.input}: {formatBytes(encodeInput(input, inputEncoding).length)}
-      </span>
-      <span className="hidden md:inline">
-        {t.status.lines}: {lines}
-      </span>
+      {/* The byte and line counts used to live here, and only here, which put
+          them as far from the pane they describe as the window allows. They are
+          in the pane headers now; repeating them would just be noise. */}
 
       {steps.length > 0 && (
         <span className="hidden sm:inline">

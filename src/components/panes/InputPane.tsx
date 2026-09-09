@@ -41,8 +41,12 @@ export function InputPane() {
     <Pane
       title={t.input.title}
       meta={
-        <span className="font-mono text-micro text-faint">
-          {formatBytes(encodeInput(input, inputEncoding).length)}
+        // Beside the pane it describes, not only in the status bar at the foot
+        // of the window. The size and shape of what you are holding is the
+        // first thing you check and the last place you want to go looking.
+        <span className="flex items-center gap-2 font-mono text-micro text-faint">
+          <span>{formatBytes(encodeInput(input, inputEncoding).length)}</span>
+          {input.length > 0 && <span>{t.status.lines(input.split('\n').length)}</span>}
         </span>
       }
       actions={

@@ -227,7 +227,7 @@ export const t = {
     paused: 'Paused',
     input: 'in',
     output: 'out',
-    lines: 'lines',
+    lines: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'}`,
     steps: 'steps',
     privacy: 'Everything runs in your browser — nothing is uploaded',
   },

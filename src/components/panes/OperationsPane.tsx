@@ -156,7 +156,17 @@ export function OperationsPane() {
   const operations = useStore((s) => s.operations);
   const favourites = useStore((s) => s.favourites);
   const [query, setQuery] = useState('');
-  const [collapsed, setCollapsed] = useState<string[]>([]);
+  /*
+   * Categories start closed, so the rail opens as a menu of sixteen headings
+   * with counts rather than a single list of five hundred names.
+   *
+   * It used to start with everything expanded, which meant the first thing
+   * anyone saw was an endless alphabetical scroll they had to read to use.
+   * Favourites is the exception — it is short, it is yours, and it is the one
+   * list worth having open. Searching expands everything again, because then
+   * the names *are* the answer.
+   */
+  const [collapsed, setCollapsed] = useState<string[]>(() => [...CATEGORY_ORDER]);
 
   const grouped = useMemo(() => {
     const q = query.trim();

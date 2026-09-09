@@ -1,19 +1,7 @@
-import {
-  Download,
-  Flag,
-  Github,
-  Keyboard,
-  Link2,
-  Moon,
-  Save,
-  ShieldAlert,
-  Sun,
-  Wrench,
-} from 'lucide-react';
+import { Download, Github, Keyboard, Link2, Moon, Save, Sun } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { IconButton } from '../ui/primitives';
-import { cx } from '../ui/helpers';
 import { RailToggle } from './Workspace';
 
 /**
@@ -41,20 +29,6 @@ export function Header() {
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
   const setDialog = useStore((s) => s.setDialog);
-  const view = useStore((s) => s.view);
-  const setView = useStore((s) => s.setView);
-  // Selected as the stored reference, never `?? []`. A selector that builds a
-  // new array each call makes every snapshot look changed, and zustand's
-  // useSyncExternalStore re-renders forever.
-  const findings = useStore((s) => s.analysis?.findings);
-  const flagCount = useStore((s) => s.ctf?.flags.length ?? 0);
-
-  const worst = findings?.some((f) => f.severity === 'critical')
-    ? 'var(--red)'
-    : findings?.some((f) => f.severity === 'high')
-      ? 'var(--amber)'
-      : 'var(--purple)';
-  const findingCount = findings?.length ?? 0;
 
   const isDark =
     theme === 'dark' ||
@@ -97,65 +71,14 @@ export function Header() {
         </div>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          {/* Three questions, three modes: what does this become, what does it
-              mean, and what should I try next. Modes rather than panels,
-              because they are read differently and rarely at the same time. */}
-          <div className="me-1 flex items-center rounded-control border border-line p-0.5">
-            <button
-              type="button"
-              onClick={() => setView('workspace')}
-              aria-pressed={view === 'workspace'}
-              className={cx(
-                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
-                view === 'workspace' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
-              )}
-            >
-              <Wrench size={12} aria-hidden="true" />
-              <span className="max-sm:hidden">{t.header.workspace}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('report')}
-              aria-pressed={view === 'report'}
-              className={cx(
-                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
-                view === 'report' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
-              )}
-            >
-              <ShieldAlert size={12} aria-hidden="true" />
-              <span className="max-sm:hidden">{t.header.report}</span>
-              {findingCount > 0 && (
-                <span
-                  className="rounded-full px-1.5 font-mono text-[10px] text-bg"
-                  style={{ backgroundColor: worst }}
-                >
-                  {findingCount}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('ctf')}
-              aria-pressed={view === 'ctf'}
-              title={t.header.ctf}
-              className={cx(
-                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
-                view === 'ctf' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
-              )}
-            >
-              <Flag size={12} aria-hidden="true" />
-              <span className="max-sm:hidden">{t.ctf.tab}</span>
-              {flagCount > 0 && (
-                <span
-                  className="rounded-full px-1.5 font-mono text-[10px] text-bg"
-                  style={{ backgroundColor: 'var(--green)' }}
-                >
-                  {flagCount}
-                </span>
-              )}
-            </button>
-          </div>
-
+          {/*
+            The Report and CTF mode switches used to sit here. Both features are
+            intact — the views, the engine behind them and their tests are all
+            still in the tree, and `view` in the store still drives which one
+            renders. Only the way in was taken out, because three modes in the
+            header made the workspace look like a suite of tools when almost
+            everybody wants the one. Putting them back is this block again.
+          */}
           <RailToggle />
 
           <span aria-hidden="true" className="mx-1 h-4 w-px bg-line" />

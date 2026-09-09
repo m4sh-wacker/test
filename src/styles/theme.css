@@ -83,7 +83,10 @@
 
   --text: #101114;
   --text-muted: #62666d;
-  --text-faint: #9598a1;
+  /* 5.18:1 against --surface. The old #9598a1 measured 2.88:1, below AA for
+     normal text and worse again at the micro size this token is mostly used
+     at: byte counts, hints, placeholders — the whole quiet layer. */
+  --text-faint: #696d77;
 
   --purple: #9d4edd;
   --purple-soft: rgba(157, 78, 221, 0.1);
@@ -113,7 +116,8 @@
 
     --text: #f7f8f8;
     --text-muted: #8a8f98;
-    --text-faint: #62666d;
+    /* 4.87:1 against --surface; the old #62666d measured 3.30:1. */
+    --text-faint: #7c818a;
 
     --purple-soft: rgba(157, 78, 221, 0.14);
     --purple-line: rgba(157, 78, 221, 0.4);
@@ -142,7 +146,8 @@
 
   --text: #f7f8f8;
   --text-muted: #8a8f98;
-  --text-faint: #62666d;
+  /* 4.87:1 against --surface; the old #62666d measured 3.30:1. */
+  --text-faint: #7c818a;
 
   --purple-soft: rgba(157, 78, 221, 0.14);
   --purple-line: rgba(157, 78, 221, 0.4);

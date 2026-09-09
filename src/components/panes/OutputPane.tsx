@@ -101,6 +101,11 @@ export function OutputPane() {
               {isImage ? 'image' : json ? 'json' : 'text'}
             </span>
             <span className="font-mono text-micro text-faint">{formatBytes(output.length)}</span>
+            {!isImage && (
+              <span className="font-mono text-micro text-faint">
+                {t.status.lines(shown.split('\n').length)}
+              </span>
+            )}
             {pausedAt !== null && (
               <span className="font-mono text-micro" style={{ color: 'var(--amber)' }}>
                 {t.output.paused}

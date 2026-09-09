@@ -234,6 +234,9 @@ export function Pipeline() {
   const [slot, setSlot] = useState<number | null>(null);
 
   const paused = pausedAt !== null;
+  // One name for the one condition. Keying `disabled` and the styling off
+  // separate copies of the same expression is how they drift apart.
+  const empty = steps.length === 0;
 
   const onDrop = (event: React.DragEvent, index: number) => {
     event.preventDefault();
@@ -295,19 +298,30 @@ export function Pipeline() {
             <SkipForward size={12} aria-hidden="true" />
           </button>
 
+          {/*
+            The primary action, and it looks like one.
+
+            It used to be a small outlined button that was *disabled whenever
+            auto-bake was on* — which is the default — so the most important
+            control in the workspace was permanently greyed out. Wanting to
+            re-run on purpose is a normal thing to want, whether or not it also
+            happens by itself, so the only reason to disable it is an empty
+            recipe.
+          */}
           <button
             type="button"
             onClick={() => void runRecipe()}
-            disabled={steps.length === 0 || (autoBake && !paused)}
+            disabled={empty}
             className={cx(
-              'flex items-center gap-1.5 rounded-control border px-3 py-1.5 text-micro font-medium',
+              'flex items-center gap-2 rounded-control px-4 py-2 text-xs2 font-semibold',
               'transition-colors duration-150 ease-smooth',
-              steps.length === 0 || (autoBake && !paused)
-                ? 'border-line text-faint'
-                : 'border-purple-line bg-purple-soft text-text hover:border-purple',
+              // Solid, not an outline: white on this purple measures 4.60:1,
+              // where the background tokens land at 4.33 and 4.48 — both just
+              // under AA for text this size.
+              empty ? 'border border-line text-faint' : 'bg-purple text-white hover:brightness-110',
             )}
           >
-            <Play size={11} aria-hidden="true" />
+            <Play size={13} aria-hidden="true" />
             {baking ? t.recipe.baking : t.recipe.bake}
           </button>
         </div>
