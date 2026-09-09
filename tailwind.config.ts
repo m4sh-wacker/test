@@ -17,6 +17,7 @@ export default {
         muted: 'var(--text-muted)',
         faint: 'var(--text-faint)',
         purple: 'var(--purple)',
+        'purple-text': 'var(--purple-text)',
         'purple-soft': 'var(--purple-soft)',
         'purple-line': 'var(--purple-line)',
         ok: 'var(--green)',

@@ -89,7 +89,11 @@ export const t = {
 
   output: {
     title: 'Output',
-    empty: 'Nothing yet. Paste something into the input.',
+    empty: 'Nothing yet.',
+    emptyDetail:
+      'Paste or drop anything into the input above — a token, a payload, a file. DecodeBox ' +
+      'works out what it is, unwraps every layer it can, and shows the evidence for each one.',
+    tryExample: 'Try an example',
     fromDetection: 'auto-decoded',
     imageAlt: 'The decoded image',
     imageNote: 'Rendered locally. This image was never uploaded anywhere.',
@@ -241,6 +245,7 @@ export const t = {
     lines: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'}`,
     steps: 'steps',
     privacy: 'Everything runs in your browser — nothing is uploaded',
+    owasp: 'An OWASP Foundation project',
   },
 
   download: {

@@ -89,14 +89,23 @@
   --text-faint: #696d77;
 
   --purple: #9d4edd;
+  /* The brand purple carries text as well as filling shapes, and it cannot do
+     both: #9d4edd measures 4.48:1 on --bg and 4.01:1 on --surface-3, so every
+     pane title and the OWASP wordmark itself sat below AA. This is the reading
+     variant, dark enough to pass on all three surfaces; --purple stays exactly
+     as it was for fills, borders and the focus ring, where contrast is not the
+     same question. 5.70:1 on --surface, 4.97:1 on --surface-3. */
+  --purple-text: #7c3aed;
   --purple-soft: rgba(157, 78, 221, 0.1);
   --purple-line: rgba(157, 78, 221, 0.38);
   --purple-wash: rgba(157, 78, 221, 0.07);
 
-  --green: #16a34a;
-  --amber: #b45309;
+  /* Each measured against --surface-3, the worst of the three backgrounds each
+     one lands on. The old values: green 2.87:1, amber 4.38:1, red 4.21:1. */
+  --green: #127a37;
+  --amber: #a04607;
   --blue: #2563eb;
-  --red: #dc2626;
+  --red: #c81e1e;
 
   --glow: none;
   --overlay-shadow: 0 8px 32px rgba(16, 17, 20, 0.14);
@@ -116,9 +125,14 @@
 
     --text: #f7f8f8;
     --text-muted: #8a8f98;
-    /* 4.87:1 against --surface; the old #62666d measured 3.30:1. */
-    --text-faint: #7c818a;
+    /* 5.34:1 against --surface and 4.78:1 against --surface-3, which is the
+       background it actually lands on inside chips and hover states. The
+       previous #7c818a measured 4.36:1 there, and #62666d before that 3.30:1. */
+    --text-faint: #83888f;
 
+    /* 6.49:1 on --bg, 5.56:1 on --surface-3. The brand purple manages 4.33:1
+       and 3.71:1 there, which is why nothing purple reads text any more. */
+    --purple-text: #b478ec;
     --purple-soft: rgba(157, 78, 221, 0.14);
     --purple-line: rgba(157, 78, 221, 0.4);
     --purple-wash: rgba(157, 78, 221, 0.09);
@@ -146,9 +160,11 @@
 
   --text: #f7f8f8;
   --text-muted: #8a8f98;
-  /* 4.87:1 against --surface; the old #62666d measured 3.30:1. */
-  --text-faint: #7c818a;
+  /* 5.34:1 against --surface and 4.78:1 against --surface-3. */
+  --text-faint: #83888f;
 
+  /* 6.49:1 on --bg, 5.56:1 on --surface-3. */
+  --purple-text: #b478ec;
   --purple-soft: rgba(157, 78, 221, 0.14);
   --purple-line: rgba(157, 78, 221, 0.4);
   --purple-wash: rgba(157, 78, 221, 0.09);

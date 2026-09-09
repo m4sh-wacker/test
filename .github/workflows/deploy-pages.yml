@@ -115,10 +115,22 @@ jobs:
       # branch moved, rebuild and serve it, and it will do none of that if it is
       # pointed somewhere else. So ask the site, which is the only thing that
       # actually knows.
+      #
+      # It is asked for *this* build, by the content hash in the entry script's
+      # filename, not merely for a build. Matching any hash would pass happily
+      # while the site served last week's copy, which is the same class of
+      # not-quite-a-check that let it serve no copy at all.
       - name: Check the site serves this build
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          entry=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' dist/index.html | head -1)
+          if [ -z "$entry" ]; then
+            echo "::error::Could not find the entry script in dist/index.html, so there is nothing to check the site against."
+            exit 1
+          fi
+          echo "Looking for $entry."
+
           config=$(gh api "repos/$GITHUB_REPOSITORY/pages" 2>/dev/null || true)
           if [ -z "$config" ]; then
             echo "::warning::Could not read the Pages configuration, so this deploy went unchecked. If the site is blank, set Settings -> Pages -> Build and deployment -> Source to 'Deploy from a branch', branch 'gh-pages' / (root)."
@@ -136,8 +148,8 @@ jobs:
           for attempt in 1 2 3 4 5 6 7 8; do
             body=$(curl -fsSL --max-time 30 "$url" || true)
             case "$body" in
-              *assets/index-*.js*)
-                echo "$url is serving the built application."
+              *"$entry"*)
+                echo "$url is serving this build."
                 exit 0
                 ;;
               *src/main.tsx*)
@@ -145,8 +157,8 @@ jobs:
                 exit 1
                 ;;
             esac
-            echo "Attempt $attempt: $url has not settled yet."
+            echo "Attempt $attempt: $url is not serving $entry yet."
             sleep 20
           done
-          echo "::error::$url never returned a recognisable build. Open it and see what it is serving."
+          echo "::error::$url never served $entry. It may be stuck on an older build - open it and see."
           exit 1

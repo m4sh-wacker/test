@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { ArgControl } from './ArgControls';
+import { StepBadge } from './Pane';
 
 /**
  * The recipe, drawn as the flow it actually is.
@@ -110,7 +111,7 @@ function Node({ index }: { index: number }) {
             hasBreak
               ? { fill: 'var(--amber)', color: 'var(--amber)' }
               : paused
-                ? { fill: 'var(--purple)', color: 'var(--purple)' }
+                ? { fill: 'var(--purple)', color: 'var(--purple-text)' }
                 : { color: 'var(--text-faint)' }
           }
         />
@@ -250,10 +251,11 @@ export function Pipeline() {
   return (
     <section aria-label={t.recipe.title} className="shrink-0 border-y border-line bg-bg px-3 py-2">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex items-center gap-2">
+          <StepBadge step={2} />
           <h2
-            className="font-mono text-micro font-medium uppercase tracking-[0.1em]"
-            style={{ color: 'var(--purple)' }}
+            className="font-mono text-xs2 font-semibold uppercase tracking-[0.08em]"
+            style={{ color: 'var(--purple-text)' }}
           >
             {t.recipe.title}
           </h2>

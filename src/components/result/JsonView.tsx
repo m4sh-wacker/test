@@ -37,7 +37,7 @@ function tokenise(source: string): Token[] {
 }
 
 const COLORS: Record<Token['kind'], string> = {
-  key: 'var(--purple)',
+  key: 'var(--purple-text)',
   string: 'var(--green)',
   number: 'var(--blue)',
   literal: 'var(--amber)',

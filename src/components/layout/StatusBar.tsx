@@ -52,15 +52,27 @@ export function StatusBar() {
       )}
 
       {result && !result.error && (
-        <>
-          <span className="hidden md:inline">
-            {t.status.output}: {formatBytes(result.byteLength)}
-          </span>
-          <span className="ms-auto font-mono">{result.durationMs.toFixed(1)} ms</span>
-        </>
+        <span className="hidden md:inline">
+          {t.status.output}: {formatBytes(result.byteLength)}
+        </span>
       )}
 
-      <span className="ms-auto hidden lg:inline">{t.status.privacy}</span>
+      {/* One right-aligned group rather than two competing `ms-auto`s, which is
+          what let the timing and the privacy line each claim the same edge. */}
+      <span className="ms-auto flex items-center gap-4">
+        {result && !result.error && (
+          <span className="font-mono">{result.durationMs.toFixed(1)} ms</span>
+        )}
+        <a
+          href="https://owasp.org"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="hidden transition-colors duration-150 ease-smooth hover:text-text sm:inline"
+        >
+          {t.status.owasp}
+        </a>
+        <span className="hidden lg:inline">{t.status.privacy}</span>
+      </span>
     </footer>
   );
 }

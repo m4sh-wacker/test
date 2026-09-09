@@ -53,7 +53,7 @@ export function DetectionStrip() {
         )}
         style={{ borderInlineStartColor: 'var(--purple)' }}
       >
-        <Sparkles size={13} aria-hidden="true" style={{ color: 'var(--purple)' }} />
+        <Sparkles size={13} aria-hidden="true" style={{ color: 'var(--purple-text)' }} />
 
         <span className="min-w-0 flex-1 text-xs2">
           <span className="text-faint">{t.detection.label} </span>

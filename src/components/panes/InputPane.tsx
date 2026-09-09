@@ -40,6 +40,7 @@ export function InputPane() {
   return (
     <Pane
       title={t.input.title}
+      step={1}
       meta={
         // Beside the pane it describes, not only in the status bar at the foot
         // of the window. The size and shape of what you are holding is the
@@ -89,7 +90,7 @@ export function InputPane() {
           autoCapitalize="off"
           aria-label={t.input.title}
           placeholder={t.input.placeholder}
-          className="min-h-0 w-full flex-1 resize-none bg-transparent p-3 font-mono text-[0.8125rem] leading-[1.7] outline-none placeholder:text-faint"
+          className="min-h-0 w-full flex-1 resize-none bg-transparent p-3 font-mono text-[0.875rem] leading-[1.75] outline-none placeholder:text-faint"
         />
 
         {dragging && (

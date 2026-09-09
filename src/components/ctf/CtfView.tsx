@@ -42,8 +42,8 @@ const KIND_ICON: Record<HintKind, typeof Flag> = {
 
 const KIND_COLOUR: Record<HintKind, string> = {
   flag: 'var(--green)',
-  decode: 'var(--purple)',
-  crack: 'var(--purple)',
+  decode: 'var(--purple-text)',
+  crack: 'var(--purple-text)',
   shape: 'var(--blue)',
   identify: 'var(--text-muted)',
   inspect: 'var(--text-muted)',

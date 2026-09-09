@@ -69,7 +69,7 @@ function FindingCard({ finding }: { finding: Finding }) {
 
       <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-micro">
         <span className="text-faint">{t.report.foundAt}</span>
-        <span className="font-mono" style={{ color: 'var(--purple)' }}>
+        <span className="font-mono" style={{ color: 'var(--purple-text)' }}>
           {finding.path}
         </span>
       </div>
@@ -248,7 +248,7 @@ export function ReportView() {
         )}
 
         <section>
-          <h2 className="mb-2 flex items-center gap-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple)' }}>
+          <h2 className="mb-2 flex items-center gap-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple-text)' }}>
             <ShieldAlert size={13} aria-hidden="true" />
             {t.report.findings}
           </h2>
@@ -266,7 +266,7 @@ export function ReportView() {
         </section>
 
         <section>
-          <h2 className="mb-2 flex items-center gap-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple)' }}>
+          <h2 className="mb-2 flex items-center gap-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple-text)' }}>
             <Target size={13} aria-hidden="true" />
             {t.report.indicators}
           </h2>
@@ -327,7 +327,7 @@ export function ReportView() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple)' }}>
+          <h2 className="mb-2 font-mono text-micro uppercase tracking-[0.1em]" style={{ color: 'var(--purple-text)' }}>
             {t.report.structure}
           </h2>
           <div className="rounded-control border border-line bg-surface p-3">

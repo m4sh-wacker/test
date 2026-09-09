@@ -50,13 +50,13 @@ export function Header() {
         }}
       />
 
-      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-line bg-surface px-3">
+      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-3 sm:gap-4">
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="self-center">
             <Logomark />
           </span>
-          <span className="truncate font-brand text-[0.9375rem] font-semibold leading-none tracking-tight">
-            <span style={{ color: 'var(--purple)' }}>OWASP</span>
+          <span className="truncate font-brand text-[0.8125rem] font-semibold leading-none tracking-tight sm:text-[0.9375rem]">
+            <span style={{ color: 'var(--purple-text)' }}>OWASP</span>
             <span className="ms-1.5 text-text">DecodeBox</span>
           </span>
           <span className="hidden text-micro text-faint sm:inline">{t.app.tagline}</span>
@@ -120,7 +120,7 @@ export function Header() {
 
           <RailToggle />
 
-          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line" />
+          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
 
           <IconButton label={t.header.share} onClick={() => setDialog('share')}>
             <Link2 size={15} aria-hidden="true" />
@@ -130,7 +130,7 @@ export function Header() {
             <Save size={15} aria-hidden="true" />
           </IconButton>
 
-          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line" />
+          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
 
           <IconButton label={t.header.theme} onClick={() => setTheme(isDark ? 'light' : 'dark')}>
             {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}

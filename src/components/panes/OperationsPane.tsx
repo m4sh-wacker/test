@@ -27,7 +27,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, at)}
-      <mark className="bg-transparent font-medium" style={{ color: 'var(--purple)' }}>
+      <mark className="bg-transparent font-medium" style={{ color: 'var(--purple-text)' }}>
         {text.slice(at, at + query.length)}
       </mark>
       {text.slice(at + query.length)}

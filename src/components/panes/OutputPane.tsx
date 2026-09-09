@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ArrowUp, Check, Copy, Download, Maximize2, Minimize2, WrapText } from 'lucide-react';
+import { ArrowUp, Check, Copy, Download, Maximize2, Minimize2, Sparkles, WrapText } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { fileSignatureOf, formatBytes, imageMimeOf, renderText } from '../../engine';
+import { SAMPLES } from '../../engine/samples';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { IconButton } from '../ui/primitives';
@@ -9,6 +10,15 @@ import { JsonView } from '../result/JsonView';
 import { DetectionStrip } from './DetectionStrip';
 import { HashBand } from './HashBand';
 import { Pane } from './Pane';
+
+/**
+ * The example the empty state offers.
+ *
+ * Two Base64 wrappings rather than one: a single layer decodes and looks like
+ * any other decoder, where two show the thing this tool is actually for, in one
+ * click, before anyone has read a word about it.
+ */
+const EXAMPLE = SAMPLES.find((s) => s.id === 'double-base64') ?? SAMPLES[0];
 
 function isJson(text: string): boolean {
   const trimmed = text.trim();
@@ -94,6 +104,7 @@ export function OutputPane() {
   return (
     <Pane
       title={t.output.title}
+      step={3}
       meta={
         output.length > 0 && (
           <>
@@ -112,7 +123,7 @@ export function OutputPane() {
               </span>
             )}
             {source === 'detection' && (
-              <span className="font-mono text-micro" style={{ color: 'var(--purple)' }}>
+              <span className="font-mono text-micro" style={{ color: 'var(--purple-text)' }}>
                 {t.output.fromDetection}
               </span>
             )}
@@ -181,7 +192,22 @@ export function OutputPane() {
 
       <div className="min-h-0 flex-1 overflow-auto">
         {output.length === 0 ? (
-          <p className="px-3 py-6 text-micro text-faint">{t.output.empty}</p>
+          <div className="flex flex-col items-start gap-2 px-3 py-6">
+            <p className="text-xs2 font-medium text-muted">{t.output.empty}</p>
+            <p className="max-w-[52ch] text-micro text-faint">{t.output.emptyDetail}</p>
+            <button
+              type="button"
+              onClick={() => setInput(EXAMPLE?.value ?? '')}
+              className={cx(
+                'mt-1 inline-flex items-center gap-1.5 rounded-control border border-purple-line',
+                'bg-purple-soft px-2.5 py-1 text-micro font-medium text-text',
+                'transition-colors duration-150 ease-smooth hover:border-purple',
+              )}
+            >
+              <Sparkles size={12} aria-hidden="true" />
+              {t.output.tryExample}
+            </button>
+          </div>
         ) : isImage ? (
           // Rendered from a data: URI, which the CSP permits for images and
           // nothing else. SVG never reaches here — the operation refuses it,
@@ -198,7 +224,7 @@ export function OutputPane() {
         ) : (
           <pre
             className={cx(
-              'p-3 font-mono text-[0.8125rem] leading-[1.7]',
+              'p-3 font-mono text-[0.875rem] leading-[1.75]',
               wrap ? 'whitespace-pre-wrap break-all' : 'whitespace-pre',
             )}
           >

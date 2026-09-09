@@ -4,10 +4,13 @@ import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 
 const TABS: Array<{ id: MobilePane; label: string; Icon: typeof Wrench }> = [
+  // Flow order, matching the numbered stages on desktop. Operations is the
+  // catalogue you reach into rather than a stage the bytes pass through, so it
+  // sits after the three rather than interrupting them.
   { id: 'input', label: t.input.title, Icon: FileInput },
-  { id: 'operations', label: t.operations.title, Icon: Wrench },
   { id: 'recipe', label: t.recipe.title, Icon: ListOrdered },
   { id: 'output', label: t.output.title, Icon: FileOutput },
+  { id: 'operations', label: t.operations.title, Icon: Wrench },
 ];
 
 export function MobileTabs() {

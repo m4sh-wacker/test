@@ -35,7 +35,7 @@ export function HashBand() {
           size={13}
           aria-hidden="true"
           className="translate-y-0.5"
-          style={{ color: 'var(--purple)' }}
+          style={{ color: 'var(--purple-text)' }}
         />
 
         <span className="text-xs2">
