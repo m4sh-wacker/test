@@ -34,7 +34,7 @@
     "@types/node": "26.4.0",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.1",
-    "@vitejs/plugin-react": "5.0.4",
+    "@vitejs/plugin-react": "6.1.1",
     "autoprefixer": "10.4.21",
     "eslint": "9.38.0",
     "eslint-plugin-react-hooks": "6.1.1",
