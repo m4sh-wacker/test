@@ -80,9 +80,9 @@ describe('Bacon cipher', () => {
 
 describe('Bifid cipher', () => {
   it('round-trips with a keyword', async () => {
-    const encoded = await run('Attack at dawn', ['bifid-encode', { Keyword: 'cyberchef' }]);
+    const encoded = await run('Attack at dawn', ['bifid-encode', { Keyword: 'decodebox' }]);
     expect(encoded).not.toBe('Attack at dawn');
-    expect(await run(encoded, ['bifid-decode', { Keyword: 'cyberchef' }])).toBe('Attack at dawn');
+    expect(await run(encoded, ['bifid-decode', { Keyword: 'decodebox' }])).toBe('Attack at dawn');
   });
 
   it('keeps punctuation and case where it found them', async () => {

@@ -247,7 +247,7 @@ const MODHEX_DELIM_OPTIONS = Object.keys(MODHEX_DELIMITERS);
 /**
  * Consistent Overhead Byte Stuffing removes every zero byte from a frame so a
  * zero can delimit frames, at a cost of one byte per 254. The output carries no
- * trailing delimiter, matching how CyberChef and most serial stacks emit it.
+ * trailing delimiter, which is how most serial stacks emit it.
  */
 function toCobs(bytes: Uint8Array): Uint8Array {
   if (bytes.length === 0) return new Uint8Array();

@@ -19,9 +19,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "parity": "node scripts/parity.mjs",
-    "parity:refresh": "node scripts/refresh-categories.mjs && node scripts/parity.mjs"
+    "test": "vitest"
   },
   "dependencies": {
     "lucide-react": "0.549.0",

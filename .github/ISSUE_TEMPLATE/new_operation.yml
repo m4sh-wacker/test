@@ -7,8 +7,8 @@ body:
     attributes:
       label: Operation name
       description: >
-        Use the established name for this transformation. If CyberChef has an operation for it,
-        match that name — shared vocabulary lowers the cost of moving between tools.
+        Use the established name for this transformation, the one the field already uses —
+        shared vocabulary lowers the cost of moving between tools.
       placeholder: From Base58
     validations:
       required: true

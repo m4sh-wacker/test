@@ -26,5 +26,9 @@ the Apache License 2.0. Where operation names match, this is deliberate: they
 are the established vocabulary of this problem space, and matching them lowers
 the cost of moving between tools.
 
+A number of the known-answer test vectors in this repository are taken from the
+same project's test suite, for the formats that have no other published vectors.
+They are cited where they are used.
+
 Third-party dependencies retain their own licenses. See the dependency manifest
 and the generated license report in the build output for details.

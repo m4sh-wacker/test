@@ -3,9 +3,9 @@ import type { Operation } from './types';
 /**
  * The jokes.
  *
- * CyberChef carries two, and people look for them. They cost almost nothing to
- * keep and a tool that is pleasant to use gets opened more often than one that
- * is not — which, for something meant to replace a habit, matters.
+ * People look for them, and they cost almost nothing to keep. A tool that is
+ * pleasant to use gets opened more often than one that is not, and for
+ * something meant to become a habit that matters.
  */
 
 export const jokeOperations: Operation[] = [

@@ -6,9 +6,10 @@ import type { Recipe } from './types';
 /**
  * Known answers for the text, comparison and unit operations.
  *
- * Where CyberChef publishes a vector for an operation, that vector is used
- * verbatim, so a difference between the two tools shows up here rather than in
- * somebody's incident report.
+ * Where a published vector exists for an operation it is used verbatim, taken
+ * from CyberChef's test suite (Apache-2.0) for the operations that have no
+ * other published source. A vector somebody else computed is worth far more
+ * than one we computed ourselves: it can disagree with us.
  */
 
 type Entry = string | [string, Record<string, string | number | boolean>];

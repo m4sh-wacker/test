@@ -6,9 +6,9 @@ import { arg, type Operation } from './types';
  *
  * Every table is expressed as multiples of one base unit, so a conversion is
  * one multiply and one divide and there is no chain of pairwise factors to get
- * wrong. The comparison entries — buses, blue whales, parsecs — are carried
- * across from CyberChef deliberately: they are how you sanity-check an order of
- * magnitude when a number has too many zeros to read.
+ * wrong. The comparison entries — buses, blue whales, parsecs — are there
+ * deliberately: they are how you sanity-check an order of magnitude when a
+ * number has too many zeros to read.
  */
 
 /** Multiples of a metre. */

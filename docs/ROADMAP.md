@@ -20,7 +20,8 @@ early as possible. A narrow tool that works beats a broad one that does not exis
 - Web Worker execution for large inputs.
 - Usage, deployment and operation-authoring documentation.
 
-**v0.1 ships at the end of this phase.** It will do less than CyberChef. That is fine.
+**v0.1 ships at the end of this phase.** It will be narrow. That is fine — a narrow tool that
+works beats a broad one that does not exist yet.
 
 ## Phase 2 — The detection engine
 
@@ -43,8 +44,7 @@ gets the most time.
 
 Target: **months 6–9**.
 
-- Operation coverage: the long tail of encodings, archive formats and hashes. Shipped; what is
-  left is tracked operation by operation, with a reason for every gap, in [parity.md](parity.md).
+- Operation coverage: the long tail of encodings, archive formats and hashes. Shipped.
 - Line-ending selector on the input. The character-encoding selector shipped alongside the fix
   to the byte boundary: text becomes bytes once, in the pane, rather than in every operation.
 - Asymmetric cryptography: RSA and ECDSA signing and verification, key conversion, certificate
@@ -77,8 +77,8 @@ Target: **months 10–12**.
 Not committed, in rough order of interest:
 
 - A headless build of the engine usable as a library and from a CLI, so DecodeBox can run inside
-  pipelines and CI rather than only in a browser tab. CyberChef is effectively impossible to embed;
-  this is a real gap.
+  pipelines and CI rather than only in a browser tab. The engine has no DOM dependencies, so this
+  is a packaging question rather than a rewrite.
 - A machine-readable detection report for automated triage.
 - Plugin-style operation loading for organisation-specific formats.
 
@@ -86,6 +86,5 @@ Not committed, in rough order of interest:
 
 - Any server-side component, account system, or hosted storage. The absence of a backend is the
   product, not a limitation to be fixed later.
-- Feature parity with CyberChef as a goal in itself. We will end up covering most of the same
-  ground because the domain demands it, but matching an operation count is not a design objective.
-  Being better at identifying unknown data is.
+- Chasing an operation count. Breadth follows from what the domain actually demands, not from a
+  target, and a number is not a design objective. Being good at identifying unknown data is.

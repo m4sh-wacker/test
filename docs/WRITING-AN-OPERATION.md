@@ -31,9 +31,9 @@ If you created a new module, export the array and register it in
 recipes, so changing one silently breaks every link anybody has sent. Treat it
 as permanent.
 
-**`name`** — what people see. Where an established name exists, use it. If
-CyberChef calls something "From Base64", so do we: shared vocabulary is what
-lets someone move between tools without relearning them.
+**`name`** — what people see. Where the field already has a settled name for a
+transformation, use it: "From Base64", not "Base64 Reader". Shared vocabulary is
+what lets someone move between tools without relearning them.
 
 **`description`** — one sentence, ending in a full stop. It is shown on hover
 and in the inspector, and there is a test that fails if it is thin or unpunctuated.

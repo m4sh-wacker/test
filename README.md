@@ -24,14 +24,14 @@ compressed streams, obfuscated one-liners, and the tangled combinations of all o
 Everything runs in your browser. No input, no recipe, and no file ever leaves your machine —
 there is no server to send it to.
 
-## Why another one
+## Why it works this way
 
-[CyberChef](https://github.com/gchq/CyberChef) is excellent, and DecodeBox owes it the vocabulary
-of this problem space. But its model assumes you already know what your data is: you pick the
-operations, you chain them, you iterate. Its automatic detection — the Magic operation — is
-tucked behind a small icon, returns a single guess, and never explains itself.
+The usual model for a tool like this assumes you already know what your data is: you pick the
+operations, you chain them, you iterate. That is fine when you recognise the format on sight, and
+useless when you do not — which is most of the time an analyst is looking at something they have
+never seen before.
 
-DecodeBox is not trying to be a better CyberChef. It is a different kind of tool.
+DecodeBox starts from the opposite end. You paste, and it works out what it is holding.
 
 **A transformation tool tells you what the bytes say. DecodeBox tells you what they mean.**
 
@@ -100,8 +100,6 @@ networking, forensics, multimedia, extractors and text handling — every one co
 round-trip or a published known-answer test, because an operation that is quietly wrong is worse
 than one that is missing. Where an offline reference implementation exists it was checked against
 that too: OpenSSL, GnuPG, Pillow, libbz2, liblzma, Python's `cryptography` and `plistlib`.
-Coverage against CyberChef is tracked operation by operation in
-[docs/parity.md](docs/parity.md), and every gap carries a written reason.
 
 Files are first-class: drop in a PNG, a ZIP, an executable or a JPEG and DecodeBox reads its
 headers, lists and extracts archive entries, pulls EXIF metadata, parses PE and ELF, and renders
@@ -133,9 +131,9 @@ bound. Work above 64 KB moves to a Web Worker so the interface keeps painting.
 The engine ships as a separate chunk fetched after first paint, so the interface is interactive
 before five hundred operations have finished downloading.
 
-Not there yet: 27 CyberChef operations remain unimplemented and 6 are deliberately declined —
-each with its reason in [docs/parity.md](docs/parity.md). The accessibility audit and the
-internationalisation pass are still ahead. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Not there yet: the accessibility audit and the internationalisation pass are still ahead, and a
+handful of formats are deliberately out of scope — a disassembler and an OCR engine are their own
+projects, not operations. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Quick start
 
@@ -198,7 +196,6 @@ security reports.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The seam, detection, analysis, the executor |
 | [docs/WRITING-AN-OPERATION.md](docs/WRITING-AN-OPERATION.md) | Adding a format, end to end |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What is planned, and what is deliberately not |
-| [docs/parity.md](docs/parity.md) | Every CyberChef operation, and where we stand on it |
 
 ## Contributing
 
