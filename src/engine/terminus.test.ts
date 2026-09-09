@@ -1,6 +1,6 @@
 import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { autoDecode, describeChain, terminusOf, terminusName, lastLayer } from './index';
+import { autoDecode, describeChain, terminusOf, terminusName, lastLayer, toChain } from './index';
 import { terminalIdentification } from './detection/identify';
 
 /**
@@ -113,11 +113,12 @@ describe('how a chain ends', () => {
 
 /**
  * Deep nesting shrinks every layer, so the detector meets its own length limits
- * exactly when the chain gets interesting. Both halves of this were wrong.
+ * exactly when the chain gets interesting. Every part of this was wrong once.
  */
 describe('short layers', () => {
-  // Five Base64 wrappings. Reported from real use: three unwrapped and the
-  // fourth was declared plain text.
+  // Five Base64 wrappings. Reported from real use twice: first three unwrapped
+  // and the fourth was called plain text; then four unwrapped and the fifth was
+  // called too short to judge. It is 'mmd' all the way down.
   const NESTED = 'VjFkNGFtVkhSak5RVkRBOQ==';
 
   it('does not stop on a short Base64 layer that carries its padding', async () => {
@@ -126,10 +127,36 @@ describe('short layers', () => {
     // pattern over the part before the padding.
     const root = await autoDecode(NESTED);
     expect(describeChain(root)).toContain('Base64 → Base64 → Base64 → Base64');
-    expect(lastLayer(root).output).toBe('bW1k');
   });
 
-  it('admits it cannot judge four characters rather than calling them content', async () => {
+  it('follows the chain past the length floor when the chain is the evidence', async () => {
+    // 'bW1k' is four characters, which every detector declines on sight. It is
+    // also the fifth Base64 layer of five, and decoding it once more gives
+    // 'mmd'. Refusing on length alone threw away everything the four layers
+    // above it had already established.
+    const root = await autoDecode(NESTED);
+    expect(lastLayer(root).output).toBe('mmd');
+    expect(toChain(root)).toHaveLength(6);
+  });
+
+  it('leaves a short value alone when nothing above it vouches for the decode', async () => {
+    // The same four characters with no history. There is no chain to lean on,
+    // so the floor stands and the value is left as it is.
+    const end = terminusOf(await autoDecode('bW1k'));
+    expect(end?.reason).toBe('tooShort');
+    expect(lastLayer(await autoDecode('bW1k')).output).toBe('bW1k');
+  });
+
+  it('refuses to continue when the extra decode is not clean text', async () => {
+    // Three Base64 layers down to 'abcd', which is valid Base64 and decodes to
+    // 0x69 0xb7 0x1d. Being decodable is not evidence — every four characters
+    // in the alphabet are. Producing text is the evidence, and this does not.
+    const root = await autoDecode('V1ZkS2FscEJQVDA9');
+    expect(lastLayer(root).output).toBe('abcd');
+    expect(terminusOf(root)?.reason).toBe('tooShort');
+  });
+
+  it('admits it cannot judge what is left rather than calling it content', async () => {
     const end = terminusOf(await autoDecode(NESTED));
     expect(end?.reason).toBe('tooShort');
     expect(end?.complete).toBe(false);

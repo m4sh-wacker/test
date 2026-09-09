@@ -13,6 +13,13 @@ import { confidenceColor } from '../ui/helpers';
  */
 export function HashBand() {
   const identification = useStore((s) => s.identification);
+  // A chain longer than the input node means decoding got somewhere, and this
+  // band is for the case where it did not. Five layers of Base64 unwrapped to
+  // 'mmd' is the answer; "looks like MD5, 45%" sitting above it is a guess
+  // about the wrapper that the wrapper itself has already disproved. The
+  // terminus names whatever is genuinely at the bottom, and does it there.
+  const decoded = useStore((s) => s.chain.length > 1);
+  if (decoded) return null;
   if (!identification || identification.matches.length === 0) return null;
 
   const [best, ...rest] = identification.matches;

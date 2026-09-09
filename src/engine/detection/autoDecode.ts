@@ -1,4 +1,4 @@
-import type { Layer, RecipeStep, Terminus, TerminusReason } from '../types';
+import type { Candidate, Layer, RecipeStep, Terminus, TerminusReason } from '../types';
 import { getOperation } from '../operations';
 import { byteLength } from '../core/bytes';
 import { detect } from './detect';
@@ -55,14 +55,96 @@ const SHORTEST_DETECTABLE = 8;
  *
  * Nesting shrinks each layer, so a chain that goes deep ends on something tiny
  * by construction — and a handful of characters is a valid reading of almost
- * any encoding. `bW1k` is Base64, and it is also just four letters. There is no
+ * any encoding. `abcd` is Base64, and it is also just four letters. There is no
  * evidence either way, which is a different answer from "this is the content",
  * and saying the second when you mean the first is the kind of confident wrong
  * answer this engine is supposed to avoid.
+ *
+ * This is a floor, not the last word. `continuation` below gets past it when
+ * the chain above supplies the evidence the value itself cannot.
  */
 function tooShortToJudge(value: string): boolean {
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length < SHORTEST_DETECTABLE;
+}
+
+/**
+ * Whether a value is clean enough to be believed on nothing but its own shape.
+ *
+ * Printable ASCII and ordinary whitespace. Deliberately strict: this is the
+ * only guard standing between a short decode and a confident wrong answer.
+ */
+function looksLikeText(value: string): boolean {
+  if (value.length === 0) return false;
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    const printable = code >= 0x20 && code <= 0x7e;
+    const whitespace = code === 0x09 || code === 0x0a || code === 0x0d;
+    if (!printable && !whitespace) return false;
+  }
+  return true;
+}
+
+/**
+ * One more attempt with the operation that produced this value.
+ *
+ * Below SHORTEST_DETECTABLE every detector declines on length alone, and for a
+ * value with no history that is exactly right: four characters really are a
+ * valid reading of almost anything. But a value that got here by being decoded
+ * four times is not a value with no history, and throwing that away is how
+ * `bW1k` — the fifth Base64 layer of a five-layer chain — came to be reported
+ * as the end of the line while `mmd` sat underneath it.
+ *
+ * So try the same operation once more and keep the result only if it is clean
+ * text. Three arbitrary bytes are printable about five percent of the time, so
+ * a chain of Base64 that decodes to `mmd` is evidence and a chain that decodes
+ * to two control characters is not. That gap is the whole justification, and it
+ * is the only thing allowed to override the floor: with no previous operation
+ * to repeat, a short value is still left alone.
+ *
+ * The operation runs twice on success — once here to see, once in the loop to
+ * keep. At this length that costs nothing, and it keeps one path through the
+ * loop instead of two.
+ */
+async function continuation(
+  value: string,
+  lastStep: RecipeStep | undefined,
+  format: string,
+  seen: ReadonlySet<string>,
+  depth: number,
+): Promise<Candidate | undefined> {
+  if (!lastStep || !tooShortToJudge(value)) return undefined;
+
+  const operation = getOperation(lastStep.opId);
+  if (!operation) return undefined;
+
+  let output: string;
+  try {
+    output = await Promise.resolve(operation.run(value, lastStep.args));
+  } catch {
+    return undefined;
+  }
+
+  if (output === value || seen.has(output) || !looksLikeText(output)) return undefined;
+
+  return {
+    id: `continued-${depth}`,
+    format,
+    // Modest on purpose, and below what this value would have needed to get
+    // here on its own merits. The chain above is what justifies this layer.
+    confidence: 0.5,
+    evidence: [
+      {
+        label: `continues ${format}`,
+        detail:
+          `Too short for any detector to judge alone, but every layer above it is ${format} and ` +
+          `decoding it once more gives clean text. The chain is the evidence, not the value.`,
+        weight: 0.5,
+      },
+    ],
+    preview: output.slice(0, 120),
+    steps: [{ ...lastStep, uid: `${lastStep.opId}-continued-${depth}` }],
+  };
 }
 
 /**
@@ -151,8 +233,12 @@ export async function autoDecode(
     }
 
     const candidates = await detect(current);
-    const best = candidates[0];
-    if (!best || best.confidence < opts.threshold) {
+    const detected = candidates[0];
+    const best =
+      detected && detected.confidence >= opts.threshold
+        ? detected
+        : await continuation(current, chain[chain.length - 1], node.format, seen, depth);
+    if (!best) {
       node.terminus = settle(current, chain[chain.length - 1]);
       return root;
     }
