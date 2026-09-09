@@ -1,0 +1,239 @@
+/*
+ * OWASP's brand typefaces: Poppins for headings, Barlow for body text, per the
+ * Foundation's branding guidelines. JetBrains Mono carries every byte of user
+ * data, where a distinguishable 0/O and 1/l is not a preference.
+ *
+ * All self-hosted. A font CDN would tell a third party the IP address of every
+ * person who opens the tool, which is exactly what this project promises not to
+ * do.
+ */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/barlow-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/barlow-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/barlow-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Light is the base definition so no color exists only inside a media query.
+  Dark is applied by preference, then by explicit choice, so the toggle wins in
+  both directions.
+*/
+:root {
+  color-scheme: light;
+
+  --bg: #fcfcfd;
+  --surface: #ffffff;
+  --surface-2: #f6f6f8;
+  --surface-3: #efeff2;
+
+  --border: rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.14);
+
+  --text: #101114;
+  --text-muted: #62666d;
+  --text-faint: #9598a1;
+
+  --purple: #9d4edd;
+  --purple-soft: rgba(157, 78, 221, 0.1);
+  --purple-line: rgba(157, 78, 221, 0.38);
+  --purple-wash: rgba(157, 78, 221, 0.07);
+
+  --green: #16a34a;
+  --amber: #b45309;
+  --blue: #2563eb;
+  --red: #dc2626;
+
+  --glow: none;
+  --overlay-shadow: 0 8px 32px rgba(16, 17, 20, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --bg: #08090a;
+    --surface: #0f1011;
+    --surface-2: #141517;
+    --surface-3: #1a1c1f;
+
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
+
+    --text: #f7f8f8;
+    --text-muted: #8a8f98;
+    --text-faint: #62666d;
+
+    --purple-soft: rgba(157, 78, 221, 0.14);
+    --purple-line: rgba(157, 78, 221, 0.4);
+    --purple-wash: rgba(157, 78, 221, 0.09);
+
+    --green: #34d399;
+    --amber: #fbbf24;
+    --blue: #4a7bfe;
+    --red: #ef4444;
+
+    --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
+    --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #08090a;
+  --surface: #0f1011;
+  --surface-2: #141517;
+  --surface-3: #1a1c1f;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --text: #f7f8f8;
+  --text-muted: #8a8f98;
+  --text-faint: #62666d;
+
+  --purple-soft: rgba(157, 78, 221, 0.14);
+  --purple-line: rgba(157, 78, 221, 0.4);
+  --purple-wash: rgba(157, 78, 221, 0.09);
+
+  --green: #34d399;
+  --amber: #fbbf24;
+  --blue: #4a7bfe;
+  --red: #ef4444;
+
+  --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
+  --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--purple-soft);
+    color: var(--text);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-faint);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* The one glowing element on screen at any moment. */
+  .glow {
+    box-shadow: var(--glow);
+  }
+
+  .rise {
+    animation: rise 260ms cubic-bezier(0.2, 0, 0.2, 1) both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

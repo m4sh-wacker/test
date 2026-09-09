@@ -1,0 +1,1573 @@
+{
+  "To Hexdump": {
+    "op": "to-hexdump"
+  },
+  "From Hexdump": {
+    "op": "from-hexdump"
+  },
+  "To Hex": {
+    "op": "to-hex"
+  },
+  "From Hex": {
+    "op": "from-hex"
+  },
+  "To Charcode": {
+    "op": "to-charcode"
+  },
+  "From Charcode": {
+    "op": "from-charcode"
+  },
+  "To Decimal": {
+    "op": "to-decimal"
+  },
+  "From Decimal": {
+    "op": "from-decimal"
+  },
+  "To Binary": {
+    "op": "to-binary"
+  },
+  "From Binary": {
+    "op": "from-binary"
+  },
+  "To Octal": {
+    "op": "to-octal"
+  },
+  "From Octal": {
+    "op": "from-octal"
+  },
+  "To Base32": {
+    "op": "to-base32"
+  },
+  "From Base32": {
+    "op": "from-base32"
+  },
+  "To Base45": {
+    "op": "to-base45"
+  },
+  "From Base45": {
+    "op": "from-base45"
+  },
+  "To Base58": {
+    "op": "to-base58"
+  },
+  "From Base58": {
+    "op": "from-base58"
+  },
+  "To Base62": {
+    "op": "to-base62"
+  },
+  "From Base62": {
+    "op": "from-base62"
+  },
+  "To Base64": {
+    "op": "to-base64"
+  },
+  "From Base64": {
+    "op": "from-base64"
+  },
+  "To Base85": {
+    "op": "to-base85"
+  },
+  "From Base85": {
+    "op": "from-base85"
+  },
+  "To HTML Entity": {
+    "op": "to-html-entity"
+  },
+  "From HTML Entity": {
+    "op": "from-html-entity"
+  },
+  "URL Encode": {
+    "op": "url-encode"
+  },
+  "URL Decode": {
+    "op": "url-decode"
+  },
+  "Escape Unicode Characters": {
+    "op": "escape-unicode"
+  },
+  "Unescape Unicode Characters": {
+    "op": "unescape-unicode"
+  },
+  "Normalise Unicode": {
+    "op": "normalise-unicode"
+  },
+  "To Quoted Printable": {
+    "op": "to-quoted-printable"
+  },
+  "From Quoted Printable": {
+    "op": "from-quoted-printable"
+  },
+  "To Punycode": {
+    "op": "to-punycode"
+  },
+  "From Punycode": {
+    "op": "from-punycode"
+  },
+  "Change IP format": {
+    "op": "change-ip-format"
+  },
+  "Swap endianness": {
+    "op": "swap-endianness"
+  },
+  "CSV to JSON": {
+    "op": "csv-to-json"
+  },
+  "JSON to CSV": {
+    "op": "json-to-csv"
+  },
+  "AES Encrypt": {
+    "op": "aes-encrypt"
+  },
+  "AES Decrypt": {
+    "op": "aes-decrypt"
+  },
+  "RC4": {
+    "op": "rc4"
+  },
+  "ROT13": {
+    "op": "rot13"
+  },
+  "ROT13 Brute Force": {
+    "op": "rot-n"
+  },
+  "ROT47": {
+    "op": "rot47"
+  },
+  "XOR": {
+    "op": "xor"
+  },
+  "XOR Brute Force": {
+    "op": "xor-brute-force"
+  },
+  "Vigenère Encode": {
+    "op": "vigenere-encode"
+  },
+  "Vigenère Decode": {
+    "op": "vigenere-decode"
+  },
+  "To Morse Code": {
+    "op": "to-morse"
+  },
+  "From Morse Code": {
+    "op": "from-morse"
+  },
+  "Affine Cipher Encode": {
+    "op": "affine-encode"
+  },
+  "Affine Cipher Decode": {
+    "op": "affine-decode"
+  },
+  "A1Z26 Cipher Encode": {
+    "op": "a1z26-encode"
+  },
+  "A1Z26 Cipher Decode": {
+    "op": "a1z26-decode"
+  },
+  "Rail Fence Cipher Encode": {
+    "op": "rail-fence-encode"
+  },
+  "Rail Fence Cipher Decode": {
+    "op": "rail-fence-decode"
+  },
+  "Atbash Cipher": {
+    "op": "atbash"
+  },
+  "Substitute": {
+    "op": "find-replace"
+  },
+  "Derive PBKDF2 key": {
+    "op": "pbkdf2"
+  },
+  "JWT Decode": {
+    "op": "jwt-decode"
+  },
+  "Set Union": {
+    "op": "set-union"
+  },
+  "Set Intersection": {
+    "op": "set-intersection"
+  },
+  "Set Difference": {
+    "op": "set-difference"
+  },
+  "Symmetric Difference": {
+    "op": "symmetric-difference"
+  },
+  "Cartesian Product": {
+    "op": "cartesian-product"
+  },
+  "Power Set": {
+    "op": "power-set"
+  },
+  "OR": {
+    "op": "or"
+  },
+  "NOT": {
+    "op": "not"
+  },
+  "AND": {
+    "op": "and"
+  },
+  "ADD": {
+    "op": "add"
+  },
+  "SUB": {
+    "op": "sub"
+  },
+  "Sum": {
+    "op": "sum"
+  },
+  "Subtract": {
+    "op": "subtract"
+  },
+  "Multiply": {
+    "op": "multiply"
+  },
+  "Divide": {
+    "op": "divide"
+  },
+  "MOD": {
+    "op": "mod"
+  },
+  "Extended GCD": {
+    "op": "extended-gcd"
+  },
+  "Modular Exponentiation": {
+    "op": "modular-exponentiation"
+  },
+  "Modular Inverse": {
+    "op": "modular-inverse"
+  },
+  "Mean": {
+    "op": "mean"
+  },
+  "Median": {
+    "op": "median"
+  },
+  "Standard Deviation": {
+    "op": "standard-deviation"
+  },
+  "Bit shift left": {
+    "op": "bit-shift"
+  },
+  "Bit shift right": {
+    "op": "bit-shift"
+  },
+  "Rotate left": {
+    "op": "bit-rotate"
+  },
+  "Rotate right": {
+    "op": "bit-rotate"
+  },
+  "Parse User Agent": {
+    "op": "parse-user-agent"
+  },
+  "Parse URI": {
+    "op": "parse-uri"
+  },
+  "Defang URL": {
+    "op": "defang"
+  },
+  "Fang URL": {
+    "op": "refang"
+  },
+  "Defang IP Addresses": {
+    "op": "defang"
+  },
+  "Remove Diacritics": {
+    "op": "remove-diacritics"
+  },
+  "Convert to NATO alphabet": {
+    "op": "to-nato"
+  },
+  "Remove whitespace": {
+    "op": "remove-whitespace"
+  },
+  "Remove null bytes": {
+    "op": "remove-null-bytes"
+  },
+  "To Upper case": {
+    "op": "to-upper-case"
+  },
+  "To Lower case": {
+    "op": "to-lower-case"
+  },
+  "Add line numbers": {
+    "op": "add-line-numbers"
+  },
+  "Remove line numbers": {
+    "op": "remove-line-numbers"
+  },
+  "To Table": {
+    "op": "to-table"
+  },
+  "Reverse": {
+    "op": "reverse"
+  },
+  "Sort": {
+    "op": "sort"
+  },
+  "Unique": {
+    "op": "unique"
+  },
+  "Split": {
+    "op": "split"
+  },
+  "Head": {
+    "op": "head"
+  },
+  "Tail": {
+    "op": "tail"
+  },
+  "Count occurrences": {
+    "op": "count-occurrences"
+  },
+  "Drop bytes": {
+    "op": "drop-bytes"
+  },
+  "Take bytes": {
+    "op": "take-bytes"
+  },
+  "Pad lines": {
+    "op": "pad-lines"
+  },
+  "Find / Replace": {
+    "op": "find-replace"
+  },
+  "Regular expression": {
+    "op": "regular-expression"
+  },
+  "Wrap": {
+    "op": "wrap-lines"
+  },
+  "Parse DateTime": {
+    "op": "parse-datetime"
+  },
+  "From UNIX Timestamp": {
+    "op": "from-unix-timestamp"
+  },
+  "To UNIX Timestamp": {
+    "op": "to-unix-timestamp"
+  },
+  "Windows Filetime to UNIX Timestamp": {
+    "op": "from-filetime"
+  },
+  "UNIX Timestamp to Windows Filetime": {
+    "op": "to-filetime"
+  },
+  "Get Time": {
+    "op": "now"
+  },
+  "Strings": {
+    "op": "strings"
+  },
+  "Extract IP addresses": {
+    "op": "extract-ips"
+  },
+  "Extract email addresses": {
+    "op": "extract-emails"
+  },
+  "Extract MAC addresses": {
+    "op": "extract-mac"
+  },
+  "Extract URLs": {
+    "op": "extract-urls"
+  },
+  "Extract domains": {
+    "op": "extract-domains"
+  },
+  "Extract hashes": {
+    "op": "extract-hashes"
+  },
+  "Extract EXIF": {
+    "op": "extract-exif"
+  },
+  "Extract Files": {
+    "op": "scan-embedded-files"
+  },
+  "Raw Deflate": {
+    "op": "raw-deflate"
+  },
+  "Raw Inflate": {
+    "op": "raw-inflate"
+  },
+  "Zlib Deflate": {
+    "op": "zlib-deflate"
+  },
+  "Zlib Inflate": {
+    "op": "zlib-inflate"
+  },
+  "Gzip": {
+    "op": "gzip"
+  },
+  "Gunzip": {
+    "op": "gunzip"
+  },
+  "Unzip": {
+    "op": "extract-from-zip"
+  },
+  "Analyse hash": {
+    "op": "identify-hash"
+  },
+  "Generate all checksums": {
+    "op": "all-checksums"
+  },
+  "Generate all hashes": {
+    "op": "generate-all-hashes",
+    "note": "Runs every digest this build can compute; the list is the DecodeBox set, not CyberChef’s."
+  },
+  "MD2": {
+    "op": "md2"
+  },
+  "MD4": {
+    "op": "md4"
+  },
+  "MD5": {
+    "op": "md5"
+  },
+  "SHA0": {
+    "op": "sha-0"
+  },
+  "SHA1": {
+    "op": "sha-1"
+  },
+  "SHA2": {
+    "op": "sha-256"
+  },
+  "SHA3": {
+    "op": "sha3"
+  },
+  "SM3": {
+    "op": "sm3"
+  },
+  "HAS-160": {
+    "op": "has-160"
+  },
+  "Keccak": {
+    "op": "keccak"
+  },
+  "Shake": {
+    "op": "shake"
+  },
+  "RIPEMD": {
+    "op": "ripemd"
+  },
+  "BLAKE2b": {
+    "op": "blake2b"
+  },
+  "BLAKE2s": {
+    "op": "blake2s"
+  },
+  "HMAC": {
+    "op": "hmac"
+  },
+  "NT Hash": {
+    "op": "nt-hash"
+  },
+  "MurmurHash3": {
+    "op": "murmurhash3"
+  },
+  "Fletcher-8 Checksum": {
+    "op": "fletcher-8"
+  },
+  "Fletcher-16 Checksum": {
+    "op": "fletcher-16"
+  },
+  "Fletcher-32 Checksum": {
+    "op": "fletcher-32"
+  },
+  "Fletcher-64 Checksum": {
+    "op": "fletcher-64"
+  },
+  "Adler-32 Checksum": {
+    "op": "adler-32"
+  },
+  "Luhn Checksum": {
+    "op": "luhn-checksum"
+  },
+  "CRC Checksum": {
+    "op": "crc-checksum"
+  },
+  "TCP/IP Checksum": {
+    "op": "tcp-ip-checksum"
+  },
+  "XOR Checksum": {
+    "op": "xor-checksum"
+  },
+  "Parity Bit": {
+    "op": "parity-bit"
+  },
+  "JSON Beautify": {
+    "op": "json-beautify"
+  },
+  "JSON Minify": {
+    "op": "json-minify"
+  },
+  "XML Beautify": {
+    "op": "xml-beautify"
+  },
+  "XML Minify": {
+    "op": "xml-minify"
+  },
+  "Strip HTML tags": {
+    "op": "strip-html"
+  },
+  "Detect File Type": {
+    "op": "detect-file-type"
+  },
+  "Scan for Embedded Files": {
+    "op": "scan-embedded-files"
+  },
+  "Remove EXIF": {
+    "op": "strip-exif"
+  },
+  "Render Image": {
+    "op": "render-image"
+  },
+  "Entropy": {
+    "op": "entropy"
+  },
+  "Frequency distribution": {
+    "op": "frequency-distribution"
+  },
+  "Index of Coincidence": {
+    "op": "index-of-coincidence"
+  },
+  "Chi Square": {
+    "op": "chi-square"
+  },
+  "Generate UUID": {
+    "op": "generate-uuid"
+  },
+  "HTML To Text": {
+    "op": "strip-html"
+  },
+  "Fork": {
+    "op": "fork"
+  },
+  "Subsection": {
+    "op": "subsection"
+  },
+  "Merge": {
+    "op": "merge"
+  },
+  "Register": {
+    "op": "register"
+  },
+  "Label": {
+    "op": "label"
+  },
+  "Jump": {
+    "op": "jump"
+  },
+  "Conditional Jump": {
+    "op": "conditional-jump"
+  },
+  "Comment": {
+    "op": "comment"
+  },
+  "To Float": {
+    "op": "to-float"
+  },
+  "From Float": {
+    "op": "from-float"
+  },
+  "To Base": {
+    "op": "to-base"
+  },
+  "From Base": {
+    "op": "from-base"
+  },
+  "To BCD": {
+    "op": "to-bcd"
+  },
+  "From BCD": {
+    "op": "from-bcd"
+  },
+  "Text-Integer Conversion": {
+    "op": "text-integer"
+  },
+  "To Base92": {
+    "op": "to-base92"
+  },
+  "From Base92": {
+    "op": "from-base92"
+  },
+  "To Bech32": {
+    "op": "to-bech32"
+  },
+  "From Bech32": {
+    "op": "from-bech32"
+  },
+  "To Braille": {
+    "op": "to-braille"
+  },
+  "From Braille": {
+    "op": "from-braille"
+  },
+  "To Modhex": {
+    "op": "to-modhex"
+  },
+  "From Modhex": {
+    "op": "from-modhex"
+  },
+  "To COBS": {
+    "op": "to-cobs"
+  },
+  "From COBS": {
+    "op": "from-cobs"
+  },
+  "Parse TLV": {
+    "op": "parse-tlv",
+    "note": "Parse TLV; keys and values are hex strings, not byte arrays"
+  },
+  "To Hex Content": {
+    "op": "to-hex-content"
+  },
+  "From Hex Content": {
+    "op": "from-hex-content"
+  },
+  "PEM to Hex": {
+    "op": "pem-to-hex"
+  },
+  "Hex to PEM": {
+    "op": "hex-to-pem"
+  },
+  "MIME Decoding": {
+    "op": "mime-decoding"
+  },
+  "Caret/M-decode": {
+    "op": "caret-m-decode"
+  },
+  "Show Base64 offsets": {
+    "op": "show-base64-offsets",
+    "note": "Show Base64 offsets; a text report rather than highlighted HTML"
+  },
+  "Escape Smart Characters": {
+    "op": "escape-smart-characters"
+  },
+  "Encode text": {
+    "op": "encode-text",
+    "note": "Encode text; the platform's ~38 WHATWG code pages, so no EBCDIC or IBM DOS pages"
+  },
+  "Decode text": {
+    "op": "decode-text",
+    "note": "Decode text; the platform's ~38 WHATWG code pages, so no EBCDIC or IBM DOS pages"
+  },
+  "Text Encoding Brute Force": {
+    "op": "text-encoding-brute-force"
+  },
+  "Swap case": {
+    "op": "swap-case"
+  },
+  "Alternating Caps": {
+    "op": "alternating-caps"
+  },
+  "Get All Casings": {
+    "op": "get-all-casings"
+  },
+  "To Case Insensitive Regex": {
+    "op": "to-case-insensitive-regex"
+  },
+  "From Case Insensitive Regex": {
+    "op": "from-case-insensitive-regex"
+  },
+  "To Snake case": {
+    "op": "to-snake-case"
+  },
+  "To Camel case": {
+    "op": "to-camel-case"
+  },
+  "To Kebab case": {
+    "op": "to-kebab-case"
+  },
+  "Convert Leet Speak": {
+    "op": "convert-leet-speak"
+  },
+  "Unicode Text Format": {
+    "op": "unicode-text-format"
+  },
+  "Remove ANSI Escape Codes": {
+    "op": "remove-ansi-escape-codes"
+  },
+  "Escape string": {
+    "op": "escape-string",
+    "note": "Escape string; hand-written escaping rather than jsesc, same options"
+  },
+  "Unescape string": {
+    "op": "unescape-string"
+  },
+  "Expand alphabet range": {
+    "op": "expand-alphabet-range"
+  },
+  "Hamming Distance": {
+    "op": "hamming-distance"
+  },
+  "Levenshtein Distance": {
+    "op": "levenshtein-distance"
+  },
+  "Fuzzy Match": {
+    "op": "fuzzy-match",
+    "note": "Fuzzy Match; ranked text lines rather than highlighted HTML"
+  },
+  "Offset checker": {
+    "op": "offset-checker",
+    "note": "Offset checker; a marker line rather than highlighted HTML"
+  },
+  "Diff": {
+    "op": "diff",
+    "note": "Diff; +/- markers rather than <ins>/<del>, and no CSS or JSON modes"
+  },
+  "Take nth bytes": {
+    "op": "take-nth-bytes"
+  },
+  "Drop nth bytes": {
+    "op": "drop-nth-bytes"
+  },
+  "Shuffle": {
+    "op": "shuffle"
+  },
+  "Filter": {
+    "op": "filter"
+  },
+  "File Tree": {
+    "op": "file-tree"
+  },
+  "Sleep": {
+    "op": "sleep",
+    "note": "Sleep; capped at 3 seconds so it cannot outlive the step timeout"
+  },
+  "Pseudo-Random Number Generator": {
+    "op": "pseudo-random-number-generator"
+  },
+  "Pseudo-Random Integer Generator": {
+    "op": "pseudo-random-integer-generator"
+  },
+  "Generate De Bruijn Sequence": {
+    "op": "generate-de-bruijn-sequence"
+  },
+  "Generate Lorem Ipsum": {
+    "op": "generate-lorem-ipsum"
+  },
+  "Analyse UUID": {
+    "op": "analyse-uuid"
+  },
+  "Parse UNIX file permissions": {
+    "op": "parse-unix-file-permissions"
+  },
+  "Parse ObjectID timestamp": {
+    "op": "parse-objectid-timestamp"
+  },
+  "Parse colour code": {
+    "op": "parse-colour-code",
+    "note": "Parse colour code; every notation as text, without the colour picker"
+  },
+  "Convert distance": {
+    "op": "convert-distance"
+  },
+  "Convert area": {
+    "op": "convert-area"
+  },
+  "Convert mass": {
+    "op": "convert-mass"
+  },
+  "Convert speed": {
+    "op": "convert-speed"
+  },
+  "Convert data units": {
+    "op": "convert-data-units"
+  },
+  "Haversine distance": {
+    "op": "haversine-distance"
+  },
+  "Generic Code Beautify": {
+    "op": "generic-code-beautify"
+  },
+  "JavaScript Beautify": {
+    "op": "javascript-beautify",
+    "note": "JavaScript Beautify; brace-driven re-indent, no quote normalisation"
+  },
+  "JavaScript Minify": {
+    "op": "javascript-minify",
+    "note": "JavaScript Minify; whitespace and comments only, not terser's renaming"
+  },
+  "CSS Beautify": {
+    "op": "css-beautify"
+  },
+  "CSS Minify": {
+    "op": "css-minify"
+  },
+  "SQL Beautify": {
+    "op": "sql-beautify"
+  },
+  "SQL Minify": {
+    "op": "sql-minify"
+  },
+  "Render Markdown": {
+    "op": "render-markdown",
+    "note": "Render Markdown; emits escaped HTML as text rather than rendering it"
+  },
+  "Microsoft Script Decoder": {
+    "op": "microsoft-script-decoder"
+  },
+  "PHP Serialize": {
+    "op": "php-serialize"
+  },
+  "PHP Deserialize": {
+    "op": "php-deserialize"
+  },
+  "CBOR Encode": {
+    "op": "cbor-encode"
+  },
+  "CBOR Decode": {
+    "op": "cbor-decode"
+  },
+  "To MessagePack": {
+    "op": "to-messagepack"
+  },
+  "From MessagePack": {
+    "op": "from-messagepack"
+  },
+  "BSON serialise": {
+    "op": "bson-serialise"
+  },
+  "BSON deserialise": {
+    "op": "bson-deserialise"
+  },
+  "Rison Encode": {
+    "op": "rison-encode"
+  },
+  "Rison Decode": {
+    "op": "rison-decode"
+  },
+  "JPath expression": {
+    "op": "jpath-expression",
+    "note": "JPath expression; paths, indexes, slices and recursive descent, but not filter expressions"
+  },
+  "Parse ASN.1 hex string": {
+    "op": "parse-asn1"
+  },
+  "Hex to Object Identifier": {
+    "op": "hex-to-object-identifier"
+  },
+  "Object Identifier to Hex": {
+    "op": "object-identifier-to-hex"
+  },
+  "Parse X.509 certificate": {
+    "op": "parse-x509-certificate",
+    "note": "Parse X.509 certificate; a text report, with the common extensions decoded by name"
+  },
+  "Parse CSR": {
+    "op": "parse-csr"
+  },
+  "Parse X.509 CRL": {
+    "op": "parse-x509-crl"
+  },
+  "Public Key from Certificate": {
+    "op": "public-key-from-certificate"
+  },
+  "Parse SSH Host Key": {
+    "op": "parse-ssh-host-key"
+  },
+  "VarInt Encode": {
+    "op": "varint-encode"
+  },
+  "VarInt Decode": {
+    "op": "varint-decode"
+  },
+  "Encode NetBIOS Name": {
+    "op": "encode-netbios-name"
+  },
+  "Decode NetBIOS Name": {
+    "op": "decode-netbios-name"
+  },
+  "Strip HTTP headers": {
+    "op": "strip-http-headers"
+  },
+  "Dechunk HTTP response": {
+    "op": "dechunk-http-response"
+  },
+  "Parse IPv4 header": {
+    "op": "parse-ipv4-header"
+  },
+  "Strip IPv4 header": {
+    "op": "strip-ipv4-header"
+  },
+  "Parse TCP": {
+    "op": "parse-tcp"
+  },
+  "Strip TCP header": {
+    "op": "strip-tcp-header"
+  },
+  "Parse UDP": {
+    "op": "parse-udp"
+  },
+  "Strip UDP header": {
+    "op": "strip-udp-header"
+  },
+  "Parse Ethernet frame": {
+    "op": "parse-ethernet-frame"
+  },
+  "Parse IP range": {
+    "op": "parse-ip-range"
+  },
+  "Group IP addresses": {
+    "op": "group-ip-addresses"
+  },
+  "Parse IPv6 address": {
+    "op": "parse-ipv6-address"
+  },
+  "IPv6 Transition Addresses": {
+    "op": "ipv6-transition-addresses"
+  },
+  "Format MAC addresses": {
+    "op": "format-mac-addresses"
+  },
+  "Parse TLS record": {
+    "op": "parse-tls-record"
+  },
+  "JA3 Fingerprint": {
+    "op": "ja3-fingerprint"
+  },
+  "JA3S Fingerprint": {
+    "op": "ja3s-fingerprint"
+  },
+  "JA4 Fingerprint": {
+    "op": "ja4-fingerprint"
+  },
+  "JA4Server Fingerprint": {
+    "op": "ja4server-fingerprint"
+  },
+  "HASSH Client Fingerprint": {
+    "op": "hassh-client-fingerprint"
+  },
+  "HASSH Server Fingerprint": {
+    "op": "hassh-server-fingerprint"
+  },
+  "Protobuf Decode": {
+    "op": "protobuf-decode",
+    "note": "Protobuf Decode; schema-less, so fields are reported by number and wire type"
+  },
+  "Protobuf Encode": {
+    "op": "protobuf-encode",
+    "note": "Protobuf Encode; takes the field list Protobuf Decode produces, not a .proto schema"
+  },
+  "HTTP request": {
+    "wont": "Sends the input to a server the recipe names. Recipes are shareable by URL, so this would turn a shared link into an exfiltration channel — and DecodeBox promises that nothing leaves the browser."
+  },
+  "DNS over HTTPS": {
+    "wont": "Same reason as HTTP request: it would send the input to a third-party resolver, which the tool's privacy promise rules out."
+  },
+  "Translate DateTime Format": {
+    "op": "translate-datetime-format",
+    "note": "Translate DateTime Format; moment-style tokens on the platform's own time-zone data"
+  },
+  "DateTime Delta": {
+    "op": "datetime-delta"
+  },
+  "Extract dates": {
+    "op": "extract-dates"
+  },
+  "Extract file paths": {
+    "op": "extract-file-paths"
+  },
+  "RAKE": {
+    "op": "rake"
+  },
+  "Template": {
+    "op": "template",
+    "note": "Template; a Mustache subset, with no helpers or partials, so a recipe cannot run code"
+  },
+  "XPath expression": {
+    "op": "xpath-expression",
+    "note": "XPath expression; paths, //, @attr, text() and simple predicates — no axes, functions or unions"
+  },
+  "CSS selector": {
+    "op": "css-selector"
+  },
+  "Jsonata Query": {
+    "wont": "A complete query language of its own, several thousand lines to implement faithfully. JPath expression covers path queries over JSON."
+  },
+  "Zip": {
+    "op": "zip",
+    "note": "Zip; one entry per archive, stored or deflated, without password encryption"
+  },
+  "Tar": {
+    "op": "tar"
+  },
+  "Untar": {
+    "op": "untar"
+  },
+  "LZ4 Compress": {
+    "op": "lz4-compress"
+  },
+  "LZ4 Decompress": {
+    "op": "lz4-decompress"
+  },
+  "LZString Compress": {
+    "op": "lzstring-compress"
+  },
+  "LZString Decompress": {
+    "op": "lzstring-decompress"
+  },
+  "LZNT1 Decompress": {
+    "op": "lznt1-decompress"
+  },
+  "Bacon Cipher Encode": {
+    "op": "bacon-encode"
+  },
+  "Bacon Cipher Decode": {
+    "op": "bacon-decode"
+  },
+  "Bifid Cipher Encode": {
+    "op": "bifid-encode"
+  },
+  "Bifid Cipher Decode": {
+    "op": "bifid-decode"
+  },
+  "Caesar Box Cipher": {
+    "op": "caesar-box-cipher"
+  },
+  "Cetacean Cipher Encode": {
+    "op": "cetacean-encode"
+  },
+  "Cetacean Cipher Decode": {
+    "op": "cetacean-decode"
+  },
+  "Citrix CTX1 Encode": {
+    "op": "citrix-ctx1-encode"
+  },
+  "Citrix CTX1 Decode": {
+    "op": "citrix-ctx1-decode"
+  },
+  "ROT8000": {
+    "op": "rot8000"
+  },
+  "ROR13": {
+    "op": "ror13"
+  },
+  "ROT47 Brute Force": {
+    "op": "rot47-brute-force"
+  },
+  "DES Encrypt": {
+    "op": "des-encrypt"
+  },
+  "DES Decrypt": {
+    "op": "des-decrypt"
+  },
+  "Triple DES Encrypt": {
+    "op": "triple-des-encrypt"
+  },
+  "Triple DES Decrypt": {
+    "op": "triple-des-decrypt"
+  },
+  "TEA Encrypt": {
+    "op": "tea-encrypt"
+  },
+  "TEA Decrypt": {
+    "op": "tea-decrypt"
+  },
+  "XTEA Encrypt": {
+    "op": "xtea-encrypt"
+  },
+  "XTEA Decrypt": {
+    "op": "xtea-decrypt"
+  },
+  "XXTEA Encrypt": {
+    "op": "xxtea-encrypt"
+  },
+  "XXTEA Decrypt": {
+    "op": "xxtea-decrypt"
+  },
+  "SM4 Encrypt": {
+    "op": "sm4-encrypt"
+  },
+  "SM4 Decrypt": {
+    "op": "sm4-decrypt"
+  },
+  "Salsa20": {
+    "op": "salsa20"
+  },
+  "XSalsa20": {
+    "op": "xsalsa20"
+  },
+  "ChaCha": {
+    "op": "chacha"
+  },
+  "Rabbit": {
+    "op": "rabbit"
+  },
+  "RC4 Drop": {
+    "op": "rc4-drop"
+  },
+  "CipherSaber2 Encrypt": {
+    "op": "ciphersaber2-encrypt"
+  },
+  "CipherSaber2 Decrypt": {
+    "op": "ciphersaber2-decrypt"
+  },
+  "Blowfish Encrypt": {
+    "op": "blowfish-encrypt"
+  },
+  "Blowfish Decrypt": {
+    "op": "blowfish-decrypt"
+  },
+  "RC2 Encrypt": {
+    "op": "rc2-encrypt"
+  },
+  "RC2 Decrypt": {
+    "op": "rc2-decrypt"
+  },
+  "RC6 Encrypt": {
+    "op": "rc6-encrypt"
+  },
+  "RC6 Decrypt": {
+    "op": "rc6-decrypt"
+  },
+  "PRESENT Encrypt": {
+    "op": "present-encrypt"
+  },
+  "PRESENT Decrypt": {
+    "op": "present-decrypt"
+  },
+  "Derive HKDF key": {
+    "op": "derive-hkdf-key"
+  },
+  "Derive EVP key": {
+    "op": "derive-evp-key"
+  },
+  "AES Key Wrap": {
+    "op": "aes-key-wrap"
+  },
+  "AES Key Unwrap": {
+    "op": "aes-key-unwrap"
+  },
+  "CMAC": {
+    "op": "cmac"
+  },
+  "LM Hash": {
+    "op": "lm-hash"
+  },
+  "JWT Sign": {
+    "op": "jwt-sign",
+    "note": "JWT Sign; HS, RS and ES families, with PEM keys for the asymmetric ones"
+  },
+  "JWT Verify": {
+    "op": "jwt-verify",
+    "note": "JWT Verify; refuses alg:none rather than reporting an unsigned token as valid"
+  },
+  "Bcrypt": {
+    "op": "bcrypt",
+    "note": "Bcrypt; cost capped at 16 so a mistyped setting cannot hang the tab"
+  },
+  "Bcrypt compare": {
+    "op": "bcrypt-compare"
+  },
+  "Bcrypt parse": {
+    "op": "bcrypt-parse"
+  },
+  "Scrypt": {
+    "op": "scrypt"
+  },
+  "AMF Encode": {
+    "op": "amf-encode"
+  },
+  "AMF Decode": {
+    "op": "amf-decode"
+  },
+  "Avro to JSON": {
+    "op": "avro-to-json",
+    "note": "Container files with the null or deflate codec; snappy, bzip2, xz and zstandard are named and refused."
+  },
+  "YAML to JSON": {
+    "op": "yaml-to-json",
+    "note": "A documented subset: block and flow syntax, block scalars, multiple documents. Anchors, aliases and tags are refused rather than guessed at."
+  },
+  "JSON to YAML": {
+    "op": "json-to-yaml"
+  },
+  "Magic": {
+    "op": "magic"
+  },
+  "Return": {
+    "op": "return"
+  },
+  "Enigma": {
+    "op": "enigma"
+  },
+  "Typex": {
+    "op": "typex",
+    "note": "The mechanism, with the rotor wirings supplied as an argument. Typex wirings were never published the way Enigma’s were, and shipping an unverifiable set would look authoritative while being wrong."
+  },
+  "Bombe": {
+    "op": "bombe"
+  },
+  "Multiple Bombe": {
+    "op": "multiple-bombe"
+  },
+  "Generate TOTP": {
+    "op": "generate-totp"
+  },
+  "Generate HOTP": {
+    "op": "generate-hotp"
+  },
+  "Extract ID3": {
+    "op": "extract-id3"
+  },
+  "Extract Audio Metadata": {
+    "op": "extract-audio-metadata",
+    "note": "MP3 (ID3v1 and ID3v2), FLAC, Ogg Vorbis, WAV and AVI."
+  },
+  "Numberwang": {
+    "op": "numberwang"
+  },
+  "XKCD Random Number": {
+    "op": "xkcd-random-number"
+  },
+  "Automated Validation Test Op": {
+    "wont": "It exists to exercise CyberChef’s own test harness, not to transform anything. DecodeBox’s test suite does that job."
+  },
+  "Show on map": {
+    "wont": "It fetches map tiles from a third-party server, which would send the coordinates you are analysing off the machine. Nothing in DecodeBox leaves the browser."
+  },
+  "Bzip2 Decompress": {
+    "op": "bzip2-decompress"
+  },
+  "Bzip2 Compress": {
+    "op": "bzip2-compress",
+    "note": "Written here rather than taken from a library; verified by handing its output to libbz2."
+  },
+  "LZMA Decompress": {
+    "op": "lzma-decompress",
+    "note": "The plain .lzma container. Streams inside .xz or .7z need unpacking first."
+  },
+  "LZMA Compress": {
+    "op": "lzma-compress",
+    "note": "A bounded greedy match finder rather than an optimal parser: the output is valid LZMA and a little larger than 7-Zip’s."
+  },
+  "XPRESS Decompress": {
+    "op": "xpress-decompress"
+  },
+  "XPRESS LZ77+Huffman Decompress": {
+    "op": "xpress-huffman-decompress",
+    "note": "The format records no decompressed size, so without the optional size argument a few bytes of padding can follow the data."
+  },
+  "Whirlpool": {
+    "op": "whirlpool"
+  },
+  "Argon2": {
+    "op": "argon2"
+  },
+  "Argon2 compare": {
+    "op": "argon2-compare"
+  },
+  "Invert Image": {
+    "op": "invert-image",
+    "note": "Reads PNG and BMP; JPEG and GIF are named and refused rather than guessed at."
+  },
+  "Flip Image": {
+    "op": "flip-image"
+  },
+  "Rotate Image": {
+    "op": "rotate-image",
+    "note": "Quarter turns. An arbitrary angle would need resampling that invents pixels."
+  },
+  "Crop Image": {
+    "op": "crop-image"
+  },
+  "Resize Image": {
+    "op": "resize-image"
+  },
+  "Contain Image": {
+    "op": "contain-image"
+  },
+  "Cover Image": {
+    "op": "cover-image"
+  },
+  "Blur Image": {
+    "op": "blur-image"
+  },
+  "Sharpen Image": {
+    "op": "sharpen-image"
+  },
+  "Image Brightness / Contrast": {
+    "op": "image-brightness-contrast"
+  },
+  "Image Opacity": {
+    "op": "image-opacity"
+  },
+  "Image Filter": {
+    "op": "image-filter"
+  },
+  "Image Hue/Saturation/Lightness": {
+    "op": "image-hsl"
+  },
+  "Normalise Image": {
+    "op": "normalise-image"
+  },
+  "Dither Image": {
+    "op": "dither-image",
+    "note": "Floyd-Steinberg to black and white."
+  },
+  "Convert Image Format": {
+    "op": "convert-image-format",
+    "note": "PNG and BMP. Writing JPEG would need an encoder that throws information away, which is the wrong default for evidence."
+  },
+  "Split Colour Channels": {
+    "op": "split-colour-channels",
+    "note": "One picture with the three channels side by side, rather than a zip of three files."
+  },
+  "Generate Image": {
+    "op": "generate-image"
+  },
+  "Extract RGBA": {
+    "op": "extract-rgba"
+  },
+  "View Bit Plane": {
+    "op": "view-bit-plane"
+  },
+  "Extract LSB": {
+    "op": "extract-lsb"
+  },
+  "Randomize Colour Palette": {
+    "op": "randomize-colour-palette"
+  },
+  "Generate RSA Key Pair": {
+    "op": "generate-rsa-key-pair"
+  },
+  "Generate ECDSA Key Pair": {
+    "op": "generate-ecdsa-key-pair"
+  },
+  "RSA Encrypt": {
+    "op": "rsa-encrypt",
+    "note": "OAEP. Textbook RSA with no padding is not offered, because it is not encryption."
+  },
+  "RSA Decrypt": {
+    "op": "rsa-decrypt"
+  },
+  "RSA Sign": {
+    "op": "rsa-sign",
+    "note": "PKCS#1 v1.5 and PSS, through Web Crypto."
+  },
+  "RSA Verify": {
+    "op": "rsa-verify"
+  },
+  "ECDSA Sign": {
+    "op": "ecdsa-sign",
+    "note": "P-256, P-384 and P-521, in raw or DER form."
+  },
+  "ECDSA Verify": {
+    "op": "ecdsa-verify"
+  },
+  "ECDSA Signature Conversion": {
+    "op": "ecdsa-signature-conversion"
+  },
+  "PEM to JWK": {
+    "op": "pem-to-jwk"
+  },
+  "JWK to PEM": {
+    "op": "jwk-to-pem"
+  },
+  "Public Key from Private Key": {
+    "op": "public-key-from-private-key"
+  },
+  "Fernet Encrypt": {
+    "op": "fernet-encrypt"
+  },
+  "Fernet Decrypt": {
+    "op": "fernet-decrypt"
+  },
+  "Flask Session Decode": {
+    "op": "flask-session-decode"
+  },
+  "Flask Session Sign": {
+    "op": "flask-session-sign"
+  },
+  "Flask Session Verify": {
+    "op": "flask-session-verify"
+  },
+  "Twofish Encrypt": {
+    "op": "twofish-encrypt"
+  },
+  "Twofish Decrypt": {
+    "op": "twofish-decrypt"
+  },
+  "P-list Viewer": {
+    "op": "plist-viewer",
+    "note": "Binary and XML, read to the same JSON either way."
+  },
+  "ELF Info": {
+    "op": "elf-info"
+  },
+  "Convert co-ordinate format": {
+    "op": "convert-coordinate-format",
+    "note": "Decimal degrees, degrees minutes seconds, degrees decimal minutes and geohash. UTM, MGRS and OSNG are projections onto an ellipsoid rather than another spelling, and are not included."
+  },
+  "Pseudo-Random Prime Generator": {
+    "op": "pseudo-random-prime-generator"
+  },
+  "Hex Density chart": {
+    "op": "hex-density-chart"
+  },
+  "Scatter chart": {
+    "op": "scatter-chart",
+    "note": "Drawn as a PNG rather than SVG: the output pane will not render SVG, because SVG is markup that can carry script."
+  },
+  "Series chart": {
+    "op": "series-chart"
+  },
+  "Heatmap chart": {
+    "op": "heatmap-chart"
+  },
+  "Add Text To Image": {
+    "op": "add-text-to-image",
+    "note": "A built-in 5x7 bitmap font. Measuring a web font needs a canvas, which the image code deliberately avoids."
+  },
+  "SSDEEP": {
+    "op": "ssdeep",
+    "note": "Tridgell’s spamsum algorithm with the published constants. There is no libfuzzy on the build machine to check interoperability against, so a comparison against a hash from ssdeep itself is unconfirmed; comparisons between two DecodeBox hashes are exact."
+  },
+  "CTPH": {
+    "op": "ctph",
+    "note": "The same algorithm as SSDEEP, under its generic name."
+  },
+  "Compare SSDEEP hashes": {
+    "op": "compare-ssdeep-hashes"
+  },
+  "Compare CTPH hashes": {
+    "op": "compare-ctph-hashes"
+  },
+  "Lorenz": {
+    "op": "lorenz",
+    "note": "The machine, with the wheel patterns supplied as an argument: the pins changed monthly and there is no single set to ship."
+  },
+  "Colossus": {
+    "op": "colossus",
+    "note": "The 1+2 break-in count Colossus was built to run, over the chi 1 and chi 2 start positions. The switch panel of the real machine is not simulated."
+  },
+  "YARA Rules": {
+    "op": "yara-rules",
+    "note": "Text, hex and regex strings with the nocase, wide, ascii and fullword modifiers; conditions with counts, at, filesize, the uint family and the counting forms. Modules (pe, elf, math, hash) and for-loops are named and refused rather than ignored."
+  },
+  "BLAKE3": {
+    "op": "blake3",
+    "note": "Hash, keyed hash and key derivation, with extendable output. Checked against the published vectors either side of the 1 KiB chunk boundary and up to 4 KiB, which is what exercises the tree."
+  },
+  "Ascon Hash": {
+    "op": "ascon-hash",
+    "note": "Ascon v1.2, the version selected by the lightweight cryptography process. NIST SP 800-232 changes the initial values, so a 2025 library will not agree."
+  },
+  "Ascon MAC": {
+    "op": "ascon-mac"
+  },
+  "Ascon Encrypt": {
+    "op": "ascon-encrypt",
+    "note": "Ascon-128 v1.2, checked against the first entry of the known-answer set."
+  },
+  "Ascon Decrypt": {
+    "op": "ascon-decrypt"
+  },
+  "Parse PGP Key": {
+    "op": "parse-pgp-key",
+    "note": "Packet structure, algorithms, user IDs, subkeys, signatures and version-4 fingerprints. Checked against GnuPG’s own output for an RSA key and an Ed25519 key with a subkey."
+  },
+  "GOST Encrypt": {
+    "op": "gost-encrypt",
+    "note": "The S-boxes are an argument: the standard leaves them as a parameter, different organisations were issued different sets, and shipping one under a name that might not be the set a message was written with would be worse than asking."
+  },
+  "GOST Decrypt": {
+    "op": "gost-decrypt"
+  },
+  "GOST Key Wrap": {
+    "op": "gost-key-wrap",
+    "note": "The RFC 4357 wrap: ECB over the key, bound by GOST’s own MAC over the UKM."
+  },
+  "GOST Key Unwrap": {
+    "op": "gost-key-unwrap"
+  },
+  "Disassemble x86": {
+    "note": "A disassembler is a table of every encoding the architecture defines, and one wrong entry turns a report into a wrong answer that reads like a right one. Not attempted rather than attempted badly."
+  },
+  "Disassemble ARM": {
+    "note": "The same reason as Disassemble x86: an instruction table that cannot be verified offline is not worth shipping."
+  },
+  "GOST Hash": {
+    "note": "GOST R 34.11-94 is defined by a large substitution parameter set that cannot be derived and was not available offline. A guessed constant produces a digest that is confidently wrong."
+  },
+  "Streebog": {
+    "note": "GOST R 34.11-2012 needs a 256-byte substitution, a 64x64 binary matrix and twelve 64-byte round constants, none of them derivable and none available offline."
+  },
+  "MD6": {
+    "note": "No published vector was available offline to check an implementation against, and a hash nobody can check is a hash that should not be shipped."
+  },
+  "Snefru": {
+    "note": "Its S-boxes are eight kilobytes of values drawn from a random source in 1990. They cannot be derived and were not available offline."
+  },
+  "SIGABA": {
+    "note": "The cipher rotors are stepped by the control and index banks through a wiring whose details could not be reproduced with confidence offline. A rotor machine that steps wrongly produces ciphertext no real machine could."
+  },
+  "LS47 Encrypt": {
+    "note": "The marker and padding rules could not be reproduced from the specification offline, and ciphertext from a near-miss would not decrypt anywhere else."
+  },
+  "LS47 Decrypt": {
+    "note": "See LS47 Encrypt."
+  },
+  "Generate PGP Key Pair": {
+    "note": "OpenPGP key generation needs the whole standard: string-to-key, the packet layer, and public key algorithms Web Crypto does not provide. Parse PGP Key reads a key that already exists, which is what most analysis needs."
+  },
+  "PGP Encrypt": {
+    "note": "The OpenPGP message layer needs session keys, its own CFB variant, compression and several algorithms the platform does not carry."
+  },
+  "PGP Decrypt": {
+    "note": "See PGP Encrypt."
+  },
+  "PGP Sign": {
+    "note": "See PGP Encrypt."
+  },
+  "PGP Verify": {
+    "note": "See PGP Encrypt. A partial verifier is the worst case of all: it would report success for messages it had not really checked."
+  },
+  "PGP Encrypt and Sign": {
+    "note": "See PGP Encrypt."
+  },
+  "PGP Decrypt and Verify": {
+    "note": "See PGP Encrypt."
+  },
+  "SM2 Encrypt": {
+    "note": "SM2 is elliptic curve arithmetic over a curve Web Crypto does not carry, so it would have to be written out by hand — the one thing this project refuses to do with public key cryptography."
+  },
+  "SM2 Decrypt": {
+    "note": "See SM2 Encrypt."
+  },
+  "Generate QR Code": {
+    "note": "Reed-Solomon coding, masking and a format-information BCH. Left until it can be checked against a real decoder, which was not available offline."
+  },
+  "Parse QR Code": {
+    "note": "Finding and rectifying a symbol in a photograph, then decoding it. See Generate QR Code."
+  },
+  "Optical Character Recognition": {
+    "note": "Needs a trained OCR engine. Shipping a model would be a dependency larger than the rest of the tool."
+  },
+  "Render PDF": {
+    "note": "A PDF renderer is a project rather than an operation. Detect File Type and the text extractors read what is inside one."
+  },
+  "Play Media": {
+    "note": "The output pane renders pictures and text. Playing audio would mean handing untrusted bytes to a media decoder inside the page, which is a larger attack surface than the feature is worth."
+  },
+  "JavaScript Parser": {
+    "note": "A JavaScript parser is a language implementation. JavaScript Beautify and JavaScript Minify cover what people reach for it for."
+  },
+  "Jq": {
+    "note": "A query language of its own, like Jsonata. JPath expression covers path queries."
+  },
+  "Syntax highlighter": {
+    "wont": "It emits HTML for a pane that renders it. DecodeBox’s output pane renders text and pictures and never HTML, deliberately: building markup out of untrusted input is the bug class the whole tool exists to avoid."
+  },
+  "GOST Sign": {
+    "note": "GOST R 34.10 signatures are elliptic curve arithmetic over curves Web Crypto does not carry, and would have to be written out by hand — the one thing this project refuses to do with public key cryptography. The same reason as SM2."
+  },
+  "GOST Verify": {
+    "note": "See GOST Sign."
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "owasp-decodebox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An encoding and decoding workbench that identifies unknown data and explains why.",
+  "homepage": "https://decodebox.owasp.org",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OWASP/DecodeBox.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "parity": "node scripts/parity.mjs",
+    "parity:refresh": "node scripts/refresh-categories.mjs && node scripts/parity.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "0.549.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.38.0",
+    "@types/node": "26.4.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.1",
+    "@vitejs/plugin-react": "5.0.4",
+    "autoprefixer": "10.4.21",
+    "eslint": "9.38.0",
+    "eslint-plugin-react-hooks": "6.1.1",
+    "eslint-plugin-react-refresh": "0.4.24",
+    "globals": "16.4.0",
+    "postcss": "8.5.6",
+    "tailwindcss": "3.4.18",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.2",
+    "vite": "7.1.9",
+    "vitest": "3.2.4"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}
