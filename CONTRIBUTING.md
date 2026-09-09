@@ -99,6 +99,28 @@ Text becomes bytes exactly once, in the input pane. Bytes become text exactly on
   themes.
 - Keep the commit history readable. Squash noise before requesting review.
 
+## Deploying
+
+Pushing to `main` builds the site and force-pushes it to the `gh-pages` branch as a single
+commit. That branch is always exactly one commit deep: the output is 2.7 MB of content-hashed
+files that change completely on every build, so keeping its history would grow the repository by
+that much per deploy and none of it would ever be read again.
+
+Setting up a repository for the first time — a fork, or the move to a new canonical repository —
+needs one thing done by hand, because no workflow token is permitted to do it:
+
+> Settings -> Pages -> Build and deployment
+> Source: **Deploy from a branch**, Branch: `gh-pages` / `(root)`
+
+Until that is set, the workflow publishes the branch and then fails, naming the setting. That is
+deliberate. It used to warn instead, and a warning inside a green run is indistinguishable from
+nothing at all: the site was blank for an afternoon while every check passed.
+
+`public/CNAME` claims `decodebox.owasp.org`. On a branch-served site the CNAME file *is* the
+custom domain setting, so the workflow deletes it anywhere except `OWASP/DecodeBox`. A fork
+serves from its own `github.io` URL instead, which works because every asset path in the build
+is relative.
+
 ## Reporting bugs
 
 Open an issue using the bug report template. The single most useful thing you can include is the
