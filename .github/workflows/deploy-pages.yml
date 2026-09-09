@@ -1,36 +1,56 @@
 name: Deploy to GitHub Pages
 
-# Pages has to be set to build from a workflow for any of this to be served:
-# Settings -> Pages -> Build and deployment -> Source: GitHub Actions. A
-# repository that has never had Pages at all is switched on automatically below;
-# one already set to deploy from a branch cannot be changed from here, so the
-# build stops and says so rather than deploying into a void.
+# The build is published to the gh-pages branch and GitHub Pages serves that
+# branch. The repository setting this needs is:
+#
+#   Settings -> Pages -> Build and deployment
+#     Source: Deploy from a branch
+#     Branch: gh-pages / (root)
+#
+# That setting cannot be changed from here. It needs repository administration
+# rights, and `administration` is not among the permissions a workflow is able
+# to request, so no token this workflow can hold will ever be allowed to. The
+# last step therefore asks the live site what it is serving and fails if the
+# answer is wrong, naming the setting. Failing is the point: an earlier version
+# only warned, and a warning inside a green run is indistinguishable from
+# nothing at all — the site was blank for an afternoon while every check passed.
+#
+# The branch is force-pushed as a single orphan commit each time. The output is
+# 2.7 MB and every file in it is content-hashed, so keeping its history would
+# add that much to the repository on every deploy, and not one byte of it would
+# ever be read again.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+# Read-only by default. The one job that needs to write asks for it itself.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Never cancel a deploy in progress. Let it finish, then run the next one.
+# One publish at a time, and never cancel one part-way through a force-push.
 concurrency:
   group: github-pages
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build static site
+  deploy:
+    name: Build and publish
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+
+    permissions:
+      # The only privilege in this workflow, and it exists for one command: the
+      # push to gh-pages at the end.
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The publish step pushes with an explicit token instead, so the
+          # checkout never leaves credentials behind in the working tree.
           persist-credentials: false
 
       - name: Use Node LTS
@@ -46,10 +66,11 @@ jobs:
         run: npm run build
 
       # CNAME claims decodebox.owasp.org, which only the canonical repository is
-      # entitled to. Shipping it from a fork points that fork's Pages site at a
-      # domain it does not control, and the result is a site that serves
-      # nothing. A fork should deploy to its own github.io URL instead, which
-      # works because the build uses relative asset paths.
+      # entitled to. On a branch-served site the CNAME file *is* the custom
+      # domain setting, so shipping it from a fork would point that fork's site
+      # at a domain it does not control and serve nothing. A fork deploys to its
+      # own github.io URL instead, which works because the build uses relative
+      # asset paths.
       - name: Drop the custom domain outside the canonical repository
         if: github.repository != 'OWASP/DecodeBox'
         run: rm -f dist/CNAME
@@ -57,6 +78,7 @@ jobs:
       - name: Verify the build is static and complete
         run: |
           test -f dist/index.html || { echo "::error::dist/index.html is missing"; exit 1; }
+          test -f dist/decodebox.html || { echo "::error::dist/decodebox.html is missing - the download button would 404"; exit 1; }
           if [ "$GITHUB_REPOSITORY" = "OWASP/DecodeBox" ]; then
             test -f dist/CNAME || echo "::warning::dist/CNAME is missing - the custom domain will not be applied"
           fi
@@ -67,93 +89,64 @@ jobs:
             exit 1
           fi
 
-      # Pages remembers how it was first switched on, and "deploy from a branch"
-      # is what you get by enabling it by hand to grab a URL. This workflow then
-      # builds, uploads and deploys an artifact that is never served: the site
-      # keeps returning the repository's own index.html, which points at
-      # /src/main.tsx and renders a blank page.
-      #
-      # This workflow cannot correct that by itself. Changing the build type
-      # needs repository administration rights, and administration is not one of
-      # the permissions a workflow is able to request, so the default token is
-      # refused however it is configured. Reading the setting is allowed, so read
-      # it and stop here, naming the one setting a person has to change.
-      #
-      # Failing rather than warning is the point. The previous version of this
-      # step only warned, and a warning inside a green run is indistinguishable
-      # from nothing at all: the site was blank for an afternoon while every
-      # check passed.
-      - name: Check Pages builds from this workflow, not from a branch
+      - name: Publish to the gh-pages branch
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          # A branch-served site runs Jekyll over the branch by default. Nothing
+          # here wants it, and it silently drops anything whose name begins with
+          # an underscore, which is a poor way to lose part of a build.
+          touch dist/.nojekyll
+
+          # A throwaway repository holding only the output, pushed over whatever
+          # was there before. gh-pages is therefore always exactly one commit
+          # deep, and this repository never grows by deploying.
+          cd dist
+          git init --quiet --initial-branch=gh-pages
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit --quiet --message "Deploy $GITHUB_SHA"
+          git push --quiet --force \
+            "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "Published $(git rev-parse --short HEAD) to gh-pages."
+
+      # A push to gh-pages is not a deployment. Pages still has to notice the
+      # branch moved, rebuild and serve it, and it will do none of that if it is
+      # pointed somewhere else. So ask the site, which is the only thing that
+      # actually knows.
+      - name: Check the site serves this build
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          kind=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || echo unreadable)
-          case "$kind" in
-            workflow)
-              echo "Pages builds from a workflow."
-              ;;
-            unreadable)
-              # Also the answer for a repository with no Pages site yet, which
-              # the Configure Pages step below is about to create correctly.
-              echo "::notice::Could not read the Pages configuration. Continuing; the deployment is checked once it lands."
-              ;;
-            *)
-              echo "::error::Pages is set to '$kind', so it serves this repository's source rather than this build and the site renders blank. Open Settings -> Pages -> Build and deployment and set Source to 'GitHub Actions'. Nothing in this workflow is permitted to change it."
-              exit 1
-              ;;
-          esac
+          config=$(gh api "repos/$GITHUB_REPOSITORY/pages" 2>/dev/null || true)
+          if [ -z "$config" ]; then
+            echo "::warning::Could not read the Pages configuration, so this deploy went unchecked. If the site is blank, set Settings -> Pages -> Build and deployment -> Source to 'Deploy from a branch', branch 'gh-pages' / (root)."
+            exit 0
+          fi
 
-      # `enablement` turns Pages on for a repository that has never had it,
-      # rather than failing the first push with "Get Pages site failed". A fork
-      # or a fresh clone of this repository then deploys without anyone having
-      # to find the setting first.
-      - name: Configure Pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-        with:
-          enablement: true
+          branch=$(printf '%s' "$config" | jq -r '.source.branch // "none"')
+          url=$(printf '%s' "$config" | jq -r '.html_url')
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: dist
+          if [ "$branch" != "gh-pages" ]; then
+            echo "::error::The build is on gh-pages, but Pages is serving the '$branch' branch, so the site does not show it. Open Settings -> Pages -> Build and deployment and set Source to 'Deploy from a branch', Branch 'gh-pages' / (root). No workflow token is permitted to change that setting."
+            exit 1
+          fi
 
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
-
-      # A deployment reports success once the artifact has been handed over.
-      # Whether the site then serves it is a separate question, and the answer
-      # was no for an entire afternoon while this workflow reported success. So
-      # ask the site, which is the only thing that actually knows.
-      - name: Verify the site serves this build
-        env:
-          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-        run: |
-          for attempt in 1 2 3 4 5; do
-            body=$(curl -fsSL --max-time 30 "$PAGE_URL" || true)
+          for attempt in 1 2 3 4 5 6 7 8; do
+            body=$(curl -fsSL --max-time 30 "$url" || true)
             case "$body" in
-              *src/main.tsx*)
-                echo "::error::$PAGE_URL is serving this repository's source index.html instead of the build, so the page is blank. Pages is deploying from a branch: set Settings -> Pages -> Build and deployment -> Source to 'GitHub Actions'."
-                exit 1
-                ;;
               *assets/index-*.js*)
-                echo "$PAGE_URL is serving the built application."
+                echo "$url is serving the built application."
                 exit 0
                 ;;
+              *src/main.tsx*)
+                echo "::error::$url is serving this repository's source index.html instead of the build, so the page is blank."
+                exit 1
+                ;;
             esac
-            echo "Attempt $attempt did not see a settled page yet."
-            sleep 15
+            echo "Attempt $attempt: $url has not settled yet."
+            sleep 20
           done
-          echo "::error::$PAGE_URL never returned a recognisable build. Open it and see what it is serving."
+          echo "::error::$url never returned a recognisable build. Open it and see what it is serving."
           exit 1
