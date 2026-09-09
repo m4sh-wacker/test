@@ -1,4 +1,5 @@
 import type { OperationDef, RecipeStep } from '../engine';
+import { safeArgValue } from './share';
 
 /**
  * The recipe as editable text.
@@ -86,7 +87,10 @@ export function fromText(text: string, operations: OperationDef[]): ParseResult 
       opId: entry.op,
       args: definition.args.map((arg) => ({
         ...arg,
-        value: entry.args?.[arg.name] ?? arg.value,
+        // Typed as a primitive, parsed from whatever was in the box. Lower
+        // stakes than a share link, since this text is the user's own, but the
+        // value reaches an operation by the same route.
+        value: safeArgValue(entry.args?.[arg.name], arg.value),
       })),
       disabled: entry.disabled === true,
     });

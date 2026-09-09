@@ -51,6 +51,81 @@ async function pipe(bytes: BlobPart, stream: CompressionStream | DecompressionSt
   return new Uint8Array(await new Response(piped).arrayBuffer());
 }
 
+/**
+ * The largest recipe this will rebuild from a link.
+ *
+ * Generous: a recipe with a hundred steps and their arguments is a few
+ * kilobytes, and an input carried deliberately is bounded by what a URL can
+ * hold anyway.
+ */
+const MAX_SHARE_BYTES = 512 * 1024;
+
+/**
+ * Decompresses with a ceiling, because the other side of a link is a stranger.
+ *
+ * Deflate reaches about 772:1 on the repetitive JSON a recipe is made of, so a
+ * 272 KB fragment — well within what a chat client will carry — expands to
+ * 200 MB. Reading the whole stream into an ArrayBuffer first, which is what
+ * `pipe` does, means the allocation happens before anything can object: open
+ * the link and the tab is gone. Nothing about that requires a bug elsewhere;
+ * it is just what an unbounded decompressor does with hostile input.
+ *
+ * Reading chunk by chunk and stopping at the ceiling costs nothing on a real
+ * link and refuses a bomb before it is allocated.
+ */
+async function inflateBounded(bytes: Uint8Array): Promise<Uint8Array | null> {
+  const reader = new Blob([bytes as BlobPart])
+    .stream()
+    .pipeThrough(
+      new DecompressionStream('deflate-raw') as ReadableWritablePair<Uint8Array, Uint8Array>,
+    )
+    .getReader();
+
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.length;
+      if (total > MAX_SHARE_BYTES) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return null;
+  }
+
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, at);
+    at += chunk.length;
+  }
+  return out;
+}
+
+/**
+ * An argument value from a link, or the default.
+ *
+ * The payload is typed as carrying primitives, and that type is a claim about
+ * data a stranger wrote. JSON will happily hand back an object, an array, or a
+ * nested structure where a string was declared, and it would travel from here
+ * into an operation's arguments with nothing in between to notice.
+ */
+export function safeArgValue(
+  candidate: unknown,
+  fallback: string | number | boolean,
+): string | number | boolean {
+  if (typeof candidate === 'string' || typeof candidate === 'boolean') return candidate;
+  // A non-finite number reaches an operation as NaN or Infinity and comes out
+  // the far side as a loop bound or a length.
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) return candidate;
+  return fallback;
+}
+
 export async function encodeShare(
   steps: RecipeStep[],
   operations: OperationDef[],
@@ -103,10 +178,9 @@ export async function decodeShare(
   let payload: SharePayload;
   try {
     const bytes = fromBase64Url(hash.slice(PREFIX.length));
-    const json = new TextDecoder().decode(
-      await pipe(bytes as BlobPart, new DecompressionStream('deflate-raw')),
-    );
-    const parsed: unknown = JSON.parse(json);
+    const inflated = await inflateBounded(bytes);
+    if (!inflated) return null;
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(inflated));
     if (
       typeof parsed !== 'object' ||
       parsed === null ||
@@ -131,11 +205,14 @@ export async function decodeShare(
     steps.push({
       uid: `${entry.op}-${Math.random().toString(36).slice(2, 9)}`,
       opId: entry.op,
-      args: definition.args.map((arg) => ({
-        ...arg,
-        value: entry.args?.[arg.name] ?? arg.value,
-        toggleValue: entry.toggles?.[arg.name] ?? arg.toggleValue,
-      })),
+      args: definition.args.map((arg) => {
+        const toggle = entry.toggles?.[arg.name];
+        return {
+          ...arg,
+          value: safeArgValue(entry.args?.[arg.name], arg.value),
+          toggleValue: typeof toggle === 'string' ? toggle : arg.toggleValue,
+        };
+      }),
       disabled: entry.off === true,
     });
   }

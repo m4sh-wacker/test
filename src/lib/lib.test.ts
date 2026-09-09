@@ -1,3 +1,4 @@
+import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { listOperations, type OperationDef, type RecipeStep } from '../engine';
 import { decodeShare, encodeShare } from './share';
@@ -21,6 +22,11 @@ async function steps(...opIds: string[]): Promise<RecipeStep[]> {
       disabled: false,
     };
   });
+}
+
+/** The URL-safe Base64 a link fragment carries. */
+function toFragment(bytes: Buffer): string {
+  return bytes.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 describe('share links', () => {
@@ -84,6 +90,36 @@ describe('share links', () => {
     expect(await decodeShare('#s=', all)).toBeNull();
     expect(await decodeShare('#nothing', all)).toBeNull();
     expect(await decodeShare('', all)).toBeNull();
+  });
+
+  /**
+   * A share link is written by whoever sends it. These are the two ways one can
+   * be hostile rather than merely malformed.
+   */
+  it('refuses a decompression bomb instead of allocating it', async () => {
+    const all = await ops();
+    // Deflate reaches about 772:1 on this shape, so a fragment a chat client
+    // carries without complaint expands to hundreds of megabytes. Unbounded,
+    // the whole thing is allocated before anything can object.
+    const bomb = JSON.stringify({ v: 1, s: [], i: 'A'.repeat(64 * 1024 * 1024) });
+    const fragment = '#s=' + toFragment(deflateRawSync(Buffer.from(bomb), { level: 9 }));
+
+    expect(fragment.length).toBeLessThan(200_000);
+    expect(await decodeShare(fragment, all)).toBeNull();
+  });
+
+  it('refuses an argument value that is not the primitive it claims to be', async () => {
+    const all = await ops();
+    // The payload type says string | number | boolean. JSON does not care, and
+    // the value would travel straight into an operation's arguments.
+    const hostile = { v: 1, s: [{ op: 'to-base64', args: { Alphabet: { nested: [1, 2] } } }] };
+    const fragment = '#s=' + toFragment(deflateRawSync(Buffer.from(JSON.stringify(hostile))));
+
+    const restored = await decodeShare(fragment, all);
+    expect(restored?.steps).toHaveLength(1);
+    for (const arg of restored?.steps[0]?.args ?? []) {
+      expect(['string', 'number', 'boolean']).toContain(typeof arg.value);
+    }
   });
 
   it('drops operations this build does not have rather than failing entirely', async () => {

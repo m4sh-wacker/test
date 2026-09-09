@@ -31,6 +31,9 @@ type PlainReason = Exclude<TerminusReason, 'identified' | 'remainder'>;
 
 const NOTES: Record<PlainReason, string> = {
   plain: 'Nothing below this decodes any further — this is the content itself.',
+  tooShort:
+    'Too short to judge. A few characters can be read as almost any encoding, so this may still ' +
+    'be wrapped in something — there is just no evidence either way.',
   depth: 'The depth limit was reached, so there may be another layer below this.',
   budget: 'The time budget ran out, so there may be another layer below this.',
   cycle: 'Decoding started repeating itself, so it was stopped here.',
@@ -39,6 +42,27 @@ const NOTES: Record<PlainReason, string> = {
 
 function ending(reason: PlainReason): Terminus {
   return { reason, note: NOTES[reason], complete: reason === 'plain' };
+}
+
+/**
+ * The shortest input any encoding here declares itself willing to be detected
+ * in. Below it, every detector has already declined on length alone.
+ */
+const SHORTEST_DETECTABLE = 8;
+
+/**
+ * Whether the value is only undecoded because it is too small to judge.
+ *
+ * Nesting shrinks each layer, so a chain that goes deep ends on something tiny
+ * by construction — and a handful of characters is a valid reading of almost
+ * any encoding. `bW1k` is Base64, and it is also just four letters. There is no
+ * evidence either way, which is a different answer from "this is the content",
+ * and saying the second when you mean the first is the kind of confident wrong
+ * answer this engine is supposed to avoid.
+ */
+function tooShortToJudge(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length < SHORTEST_DETECTABLE;
 }
 
 /**
@@ -58,7 +82,10 @@ function settle(value: string, lastStep: RecipeStep | undefined): Terminus {
   const found = terminalIdentification(value);
   if (!found) {
     const note = lastStep ? getOperation(lastStep.opId)?.detection?.terminalNote : undefined;
-    return note ? { reason: 'remainder', note, complete: true } : ending('plain');
+    if (note) return { reason: 'remainder', note, complete: true };
+    // Checked after identification: a UUID is short too, and being able to name
+    // it is a real answer where being unable to judge four characters is not.
+    return ending(tooShortToJudge(value) ? 'tooShort' : 'plain');
   }
 
   const best = found.matches[0]!;

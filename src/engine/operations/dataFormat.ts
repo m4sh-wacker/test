@@ -150,7 +150,20 @@ export const dataFormatOperations: Operation[] = [
     run: (input, args) =>
       bytesToLatin1(decodeBase64(input, arg(args, 'Alphabet', B64_STANDARD) === B64_URLSAFE)),
     detection: {
-      pattern: /^[A-Za-z0-9+/\-_\s]{8,}={0,2}$/,
+      /*
+       * The length is `minLength`'s job, and it used to be done here as well —
+       * `{8,}` before the padding — which is the same rule applied twice with
+       * two different meanings. `minLength` counts the whole string; the
+       * pattern counted only the part before `=`. So `Ylcxaw==` is eight
+       * characters by one rule and six by the other, and it was rejected.
+       *
+       * That is not a corner case, it is the main case. Nesting shrinks every
+       * layer: this one turned up four deep in a real payload, where three
+       * Base64 layers unwrapped and the fourth was declared plain text. The
+       * padding is a *signal* that it is Base64, and it was being counted as a
+       * reason to think it was not.
+       */
+      pattern: /^[A-Za-z0-9+/\-_\s]+={0,2}$/,
       entropy: [2.0, 6.2],
       minLength: 8,
     },

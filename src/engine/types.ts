@@ -118,6 +118,7 @@ export type TerminusReason =
   | 'identified'
   | 'plain'
   | 'remainder'
+  | 'tooShort'
   | 'depth'
   | 'budget'
   | 'cycle'

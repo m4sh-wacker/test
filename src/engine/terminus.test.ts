@@ -111,6 +111,39 @@ describe('how a chain ends', () => {
   });
 });
 
+/**
+ * Deep nesting shrinks every layer, so the detector meets its own length limits
+ * exactly when the chain gets interesting. Both halves of this were wrong.
+ */
+describe('short layers', () => {
+  // Five Base64 wrappings. Reported from real use: three unwrapped and the
+  // fourth was declared plain text.
+  const NESTED = 'VjFkNGFtVkhSak5RVkRBOQ==';
+
+  it('does not stop on a short Base64 layer that carries its padding', async () => {
+    // 'Ylcxaw==' is eight characters and was read as six, because the length
+    // was checked twice — once by minLength over the whole string, once by the
+    // pattern over the part before the padding.
+    const root = await autoDecode(NESTED);
+    expect(describeChain(root)).toContain('Base64 → Base64 → Base64 → Base64');
+    expect(lastLayer(root).output).toBe('bW1k');
+  });
+
+  it('admits it cannot judge four characters rather than calling them content', async () => {
+    const end = terminusOf(await autoDecode(NESTED));
+    expect(end?.reason).toBe('tooShort');
+    expect(end?.complete).toBe(false);
+    expect(end?.note).not.toMatch(/this is the content/i);
+  });
+
+  it('still names something short when it can', async () => {
+    // A UUID is short too, and naming it is a real answer. Identification is
+    // asked before the length excuse for exactly this reason.
+    const end = terminusOf(await autoDecode('550e8400-e29b-41d4-a716-446655440000'));
+    expect(end?.reason).toBe('identified');
+  });
+});
+
 describe('terminalIdentification', () => {
   it('accepts a one-way digest and a certain artefact', async () => {
     expect(terminalIdentification('$2b$12$' + 'a'.repeat(53))?.matches[0]?.name).toBe('bcrypt');
