@@ -111,9 +111,53 @@ function definitionFor(name: string): CharsetDefinition {
   return found;
 }
 
+/**
+ * The 0x80-0x9F block of windows-1252, as the WHATWG encoding standard defines
+ * it. Written as code points rather than as the characters themselves, because
+ * half of them are invisible or look like the ASCII quotes they are not.
+ *
+ * This is the one table in this file, and it is here because the platform
+ * cannot be relied on for it. CI caught the reason: on Node 20 the runtime
+ * accepts the label `windows-1252` and then decodes 0x80 as U+0080 — it hands
+ * back Latin-1 under another name. Node 22 returns U+20AC, correctly. Silently
+ * decoding one code page as a different one is precisely the failure this
+ * module's `identity` flag exists to prevent in the other direction, and it is
+ * worse in a forensic tool than refusing outright: the analyst sees plausible
+ * text and never learns it came from the wrong table.
+ *
+ * The five unassigned positions (0x81, 0x8D, 0x8F, 0x90, 0x9D) map to their own
+ * C1 control characters, which is what the standard says and what makes the
+ * mapping a permutation rather than a lossy one.
+ */
+const CP1252_C1 = [
+  0x20ac, 0x0081, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021,
+  0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008d, 0x017d, 0x008f,
+  0x0090, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014,
+  0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x009d, 0x017e, 0x0178,
+];
+
+/** True when the runtime's windows-1252 is really windows-1252. */
+const CP1252_IS_HONEST = (() => {
+  try {
+    return new TextDecoder('windows-1252').decode(new Uint8Array([0x80])) === '€';
+  } catch {
+    return false;
+  }
+})();
+
+function decodeCp1252(bytes: Uint8Array): string {
+  let out = '';
+  for (const byte of bytes) {
+    const code = byte >= 0x80 && byte <= 0x9f ? CP1252_C1[byte - 0x80]! : byte;
+    out += String.fromCharCode(code);
+  }
+  return out;
+}
+
 export function decodeCharset(name: string, bytes: Uint8Array): string {
   const definition = definitionFor(name);
   if (definition.identity) return bytesToLatin1(bytes);
+  if (definition.label === 'windows-1252' && !CP1252_IS_HONEST) return decodeCp1252(bytes);
   return new TextDecoder(definition.label).decode(bytes);
 }
 
@@ -135,11 +179,17 @@ function reverseTable(definition: CharsetDefinition): Map<string, number[]> {
   const decoder = new TextDecoder(definition.label, { fatal: true });
   const table = new Map<string, number[]>();
 
+  // Built from the same reading `decodeCharset` performs, never straight from
+  // the platform. Otherwise a runtime that mis-maps a page would encode by one
+  // table and decode by another, and a round trip inside DecodeBox would agree
+  // with itself while disagreeing with every other tool.
+  const patched = definition.label === 'windows-1252' && !CP1252_IS_HONEST;
+
   const single = new Uint8Array(1);
   for (let byte = 0; byte < 256; byte++) {
     single[0] = byte;
     try {
-      const char = decoder.decode(single);
+      const char = patched ? decodeCp1252(single) : decoder.decode(single);
       if (!table.has(char)) table.set(char, [byte]);
     } catch {
       /* not a character on its own in this code page */

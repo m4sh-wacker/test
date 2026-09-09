@@ -1,7 +1,8 @@
 name: Deploy to GitHub Pages
 
-# Requires the repository's Pages source to be set to "GitHub Actions"
-# (Settings -> Pages -> Build and deployment -> Source).
+# The Configure Pages step below turns Pages on if it is not already, so a fresh
+# repository needs no manual setup. Setting the source by hand still works
+# (Settings -> Pages -> Build and deployment -> Source: GitHub Actions).
 
 on:
   push:
@@ -53,8 +54,14 @@ jobs:
             exit 1
           fi
 
+      # `enablement` turns Pages on for a repository that has never had it,
+      # rather than failing the first push with "Get Pages site failed". A fork
+      # or a fresh clone of this repository then deploys without anyone having
+      # to find the setting first.
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

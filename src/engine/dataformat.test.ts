@@ -501,6 +501,54 @@ describe('character sets', () => {
     ).toBe('€');
   });
 
+  /**
+   * Every code point of the block the two pages disagree about.
+   *
+   * One assertion was not enough. CI found that Node 20 accepts the label
+   * `windows-1252` and then decodes it as Latin-1 — the platform substituting a
+   * different code page without saying so, which is the one thing this module
+   * exists to prevent. The whole block is pinned here so the substitution
+   * cannot come back in any single position.
+   */
+  it('decodes the whole 0x80-0x9F block of Windows-1252 as the standard defines it', async () => {
+    const expected =
+      '€‚ƒ„…†‡' +
+      'ˆ‰Š‹ŒŽ' +
+      '‘’“”•–—' +
+      '˜™š›œžŸ';
+
+    // The same thing again as code points, because five of the characters
+    // above are invisible and four are quotation marks that look exactly like
+    // the ASCII ones they are not. Nobody can review that literal by eye; this
+    // list is the published WHATWG index and can be checked against it.
+    const index = [
+      0x20ac, 0x0081, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021,
+      0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008d, 0x017d, 0x008f,
+      0x0090, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014,
+      0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x009d, 0x017e, 0x0178,
+    ];
+    expect([...expected].map((c) => c.codePointAt(0))).toEqual(index);
+
+    const hex = Array.from({ length: 32 }, (_, i) => (0x80 + i).toString(16)).join('');
+    expect(
+      await run(hex, 'from-hex', ['decode-text', { Encoding: 'Windows-1252 (Western European)' }]),
+    ).toBe(expected);
+
+    // And the same bytes read as true Latin-1, where every one is itself.
+    const latin1 = Array.from({ length: 32 }, (_, i) => String.fromCharCode(0x80 + i)).join('');
+    expect(
+      await run(hex, 'from-hex', ['decode-text', { Encoding: 'ISO-8859-1 (Latin-1)' }]),
+    ).toBe(latin1);
+  });
+
+  it('encodes Windows-1252 with the same table it decodes with', async () => {
+    // Encoding derives its table from the decoder, so a mis-mapped page would
+    // round-trip inside DecodeBox while disagreeing with every other tool.
+    expect(
+      await rawRun('€', ['encode-text', { Encoding: 'Windows-1252 (Western European)' }], 'to-hex'),
+    ).toBe('80');
+  });
+
   it('lists every reading when the encoding is unknown', async () => {
     const report = await run('93fa967b8cea', 'from-hex', 'text-encoding-brute-force');
     expect(report).toContain('日本語');

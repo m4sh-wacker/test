@@ -336,7 +336,7 @@ ported, always with the reason. Nothing is omitted from this table.
 
 | CyberChef | status | DecodeBox | note |
 | --- | --- | --- | --- |
-| Diff | done | `diff` | Diff; +/- markers rather than <ins>/<del>, and no CSS or JSON modes |
+| Diff | done | `diff` | Diff; `+`/`-` markers rather than `<ins>`/`<del>`, and no CSS or JSON modes |
 | Remove whitespace | done | `remove-whitespace` | Remove whitespace |
 | Remove null bytes | done | `remove-null-bytes` | Remove null bytes |
 | Remove ANSI Escape Codes | done | `remove-ansi-escape-codes` | Remove ANSI Escape Codes |
@@ -535,7 +535,7 @@ ported, always with the reason. Nothing is omitted from this table.
 | PHP Serialize | done | `php-serialize` | PHP Serialize |
 | Microsoft Script Decoder | done | `microsoft-script-decoder` | Microsoft Script Decoder |
 | Strip HTML tags | done | `strip-html` | Strip HTML tags |
-| Diff | done | `diff` | Diff; +/- markers rather than <ins>/<del>, and no CSS or JSON modes |
+| Diff | done | `diff` | Diff; `+`/`-` markers rather than `<ins>`/`<del>`, and no CSS or JSON modes |
 | To Snake case | done | `to-snake-case` | To Snake case |
 | To Camel case | done | `to-camel-case` | To Camel case |
 | To Kebab case | done | `to-kebab-case` | To Kebab case |

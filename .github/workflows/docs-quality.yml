@@ -86,5 +86,7 @@ jobs:
       - name: Check links
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          args: --no-progress --max-retries 3 --exclude-mail './**/*.md'
+          # Mail links are skipped by default; the old --exclude-mail spelling
+          # was removed upstream and passing it aborts the run before it starts.
+          args: --no-progress --max-retries 3 './**/*.md'
           fail: true

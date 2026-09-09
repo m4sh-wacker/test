@@ -717,7 +717,7 @@
   },
   "Diff": {
     "op": "diff",
-    "note": "Diff; +/- markers rather than <ins>/<del>, and no CSS or JSON modes"
+    "note": "Diff; `+`/`-` markers rather than `<ins>`/`<del>`, and no CSS or JSON modes"
   },
   "Take nth bytes": {
     "op": "take-nth-bytes"
