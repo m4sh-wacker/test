@@ -1,4 +1,5 @@
 # OWASP DecodeBox
+
 [![OWASP Incubator](https://img.shields.io/badge/OWASP-Incubator-blue)](https://owasp.org/projects)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue)](LICENSE)
 [![Client-side](https://img.shields.io/badge/processing-100%25_local-green)](#security--privacy)

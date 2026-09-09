@@ -479,3 +479,5 @@ terser's
 terser’s
 else's
 else’s
+CORS
+inlined
