@@ -6,6 +6,7 @@ import { OutputPane } from '../panes/OutputPane';
 import { Pipeline } from '../panes/Pipeline';
 import { Splitter } from './Splitter';
 import { MobileTabs } from './MobileTabs';
+import { useIsDesktop } from '../../hooks/useMediaQuery';
 import { t } from '../../i18n/en';
 
 /**
@@ -20,6 +21,11 @@ import { t } from '../../i18n/en';
  *
  * The result reads as one workspace rather than four, and the pipeline ends up
  * drawn in the same language as the detected layer chain, which is the point.
+ *
+ * Exactly one of the two layouts is mounted. Rendering both and hiding one with
+ * `md:hidden` hides pixels and nothing else: every pane existed twice, the store
+ * carried two of every subscription, and a screen reader announced two inputs
+ * and two outputs to somebody on a desktop.
  */
 export function Workspace() {
   const paneWidths = useStore((s) => s.paneWidths);
@@ -28,10 +34,32 @@ export function Workspace() {
   const maximised = useStore((s) => s.outputMaximised);
   const railOpen = useStore((s) => s.railOpen);
   const setRailOpen = useStore((s) => s.setRailOpen);
+  const isDesktop = useIsDesktop();
+
+  if (!isDesktop) {
+    return (
+      /* One surface at a time, chosen from a bottom tab bar. The wrapper
+         carries flex-1, because a pane sizes itself to its container. */
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
+          {mobilePane === 'operations' && <OperationsPane />}
+          {mobilePane === 'recipe' && (
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+              <Pipeline />
+              <p className="px-3 py-6 text-center text-micro text-faint">{t.recipe.mobileHint}</p>
+            </div>
+          )}
+          {mobilePane === 'input' && <InputPane />}
+          {mobilePane === 'output' && <OutputPane />}
+        </div>
+        <MobileTabs />
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="hidden min-h-0 flex-1 md:flex">
+      <div className="flex min-h-0 flex-1">
         {railOpen ? (
           <>
             <div style={{ width: paneWidths.operations }} className="flex min-h-0 shrink-0">
@@ -60,33 +88,26 @@ export function Workspace() {
         )}
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {/*
+            The input gets what it needs, not half the window.
+
+            An empty textarea was taking an equal share and pushing the output
+            below the fold, so the first thing anyone saw after pasting was the
+            box they had just pasted into. Capping it means the answer is on
+            screen at the moment it appears, which is the whole promise of the
+            tool. It still grows with its content up to the cap, and the output
+            takes everything left over.
+          */}
           {!maximised && (
-            <div className="flex min-h-0 flex-1 basis-0">
+            <div className="flex min-h-0 shrink-0 basis-auto" style={{ maxHeight: '38%' }}>
               <InputPane />
             </div>
           )}
           <Pipeline />
-          <div className={maximised ? 'flex min-h-0 flex-1' : 'flex min-h-0 flex-[1.25] basis-0'}>
+          <div className="flex min-h-0 flex-1 basis-0">
             <OutputPane />
           </div>
         </div>
-      </div>
-
-      {/* Mobile: one surface at a time, chosen from a bottom tab bar. The
-          wrapper carries flex-1, because a pane sizes itself to its container. */}
-      <div className="flex min-h-0 flex-1 flex-col md:hidden">
-        <div className="flex min-h-0 flex-1 flex-col">
-          {mobilePane === 'operations' && <OperationsPane />}
-          {mobilePane === 'recipe' && (
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-              <Pipeline />
-              <p className="px-3 py-6 text-center text-micro text-faint">{t.recipe.mobileHint}</p>
-            </div>
-          )}
-          {mobilePane === 'input' && <InputPane />}
-          {mobilePane === 'output' && <OutputPane />}
-        </div>
-        <MobileTabs />
       </div>
     </>
   );
