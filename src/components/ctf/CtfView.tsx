@@ -21,6 +21,7 @@ import { formatBytes, toMarkdown } from '../../engine';
 import type { Hint, HintKind, Layer } from '../../engine';
 import { t } from '../../i18n/en';
 import { bySeverity, confidenceColor, cx } from '../ui/helpers';
+import { LayerFind } from './LayerFind';
 import { Button, ConfidenceBar } from '../ui/primitives';
 import { CopyChip, FindingCard, IndicatorList } from '../analysis/Evidence';
 
@@ -299,8 +300,12 @@ export function CtfView() {
               </span>
             )}
           </div>
-          <Toolbar />
         </header>
+
+        <LayerFind />
+
+        {/* The CTF-specific setting, below the thing the view is named after. */}
+        <Toolbar />
 
         {/* The flag banner. If there is one, it is the answer, and it does not
             belong in a ranked list of maybes. */}

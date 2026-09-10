@@ -126,6 +126,12 @@ export {
   lastLayer,
 } from './detection/chain';
 export { toMarkdown, flatten } from './analysis/report';
+// Pure functions over a tree that is already in memory, so they belong in
+// the shell alongside the chain helpers rather than behind the worker.
+export { findInLayers, isValidQuery, DEFAULT_FIND_OPTIONS } from './analysis/find';
+export type { LayerMatch, FindOptions } from './analysis/find';
+export { explain } from './analysis/explain';
+export type { Explanation } from './analysis/explain';
 export { defang } from './analysis/indicators';
 export { RULE_COUNT } from './analysis/findings';
 export { KIND_ORDER } from './ctf/types';

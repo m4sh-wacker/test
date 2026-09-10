@@ -244,6 +244,32 @@ export const t = {
     privacy: 'Every layer was decoded in this browser. Nothing was uploaded.',
   },
 
+  /*
+   * Find in every layer.
+   *
+   * The view is called Search and its main control was a field for a CTF flag
+   * prefix, which is a niche setting rather than a search. This is the search.
+   */
+  find: {
+    region: 'Find in every layer',
+    placeholder: 'Find in every layer — including the ones not decoded yet',
+    regex: 'Read the query as a regular expression',
+    regexHint: 'Regular expression. Off means the query is matched literally.',
+    caseSensitive: 'Match case',
+    caseHint: 'Match upper and lower case exactly',
+    clear: 'Clear the search',
+    badPattern: 'That is not a pattern this can compile.',
+    none: 'Not found at any layer.',
+    count: (hits: number, layers: number) =>
+      `${hits} ${hits === 1 ? 'match' : 'matches'} in ${layers} ${layers === 1 ? 'layer' : 'layers'}`,
+    inInput: 'in the input',
+    depth: (n: number) => `${n} deep`,
+    at: (offset: number) => `at ${offset}`,
+    open: 'Open',
+    openHint: 'Load the recipe that reaches this layer and go to the workspace',
+    embedded: 'embedded — no linear recipe',
+  },
+
   hash: {
     label: 'Looks like',
     alsoPossible: 'Could also be',

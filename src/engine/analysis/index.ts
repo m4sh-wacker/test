@@ -46,6 +46,10 @@ export async function analyse(
 }
 
 export { flatten, toMarkdown } from './report';
+export { findInLayers, isValidQuery, DEFAULT_FIND_OPTIONS } from './find';
+export { explain } from './explain';
+export type { Explanation } from './explain';
+export type { LayerMatch, FindOptions } from './find';
 export { defang } from './indicators';
 export { RULE_COUNT } from './findings';
 export type {

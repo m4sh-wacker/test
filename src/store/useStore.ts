@@ -143,6 +143,8 @@ interface State {
   runCtf: () => Promise<void>;
   setCtfFormat: (format: string) => void;
   applyHint: (hint: Hint) => void;
+  /** Loads the recipe that reaches a search hit, and goes there. */
+  openLayer: (steps: RecipeStep[]) => void;
 
   /** Re-runs detection with more headroom, from the depth it stopped at. */
   analyseDeeper: () => void;
@@ -596,6 +598,29 @@ export const useStore = create<State>((set, get) => ({
         ...s,
         uid: `${s.opId}-${Math.random().toString(36).slice(2, 8)}`,
         args: s.args.map((a) => ({ ...a })),
+      })),
+      breakpoints: [],
+      pausedAt: null,
+      view: 'workspace',
+    });
+    void get().runRecipe();
+  },
+
+  /*
+   * A search hit is only half an answer.
+   *
+   * Knowing that `admin` is three decodes down is interesting; being put there,
+   * with the recipe that reaches it already loaded and editable, is the thing
+   * the reader actually wanted. Same mechanism as applying a hint, because it
+   * is the same move.
+   */
+  openLayer: (steps) => {
+    if (steps.length === 0) return;
+    set({
+      steps: steps.map((step) => ({
+        ...step,
+        uid: `${step.opId}-${Math.random().toString(36).slice(2, 8)}`,
+        args: step.args.map((a) => ({ ...a })),
       })),
       breakpoints: [],
       pausedAt: null,

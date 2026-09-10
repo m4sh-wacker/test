@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, Layers, ScanSearch, TriangleAlert, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { chainConfidence, describeRuns, summariseChain } from '../../engine';
+import { chainConfidence, describeRuns, explain, summariseChain } from '../../engine';
 import type { ChainRun } from '../../engine';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
@@ -117,6 +117,7 @@ export function DetectionStrip() {
   const whyOpen = useStore((s) => s.whyOpen);
   const dismissed = useStore((s) => s.suggestionDismissed);
   const analysing = useStore((s) => s.analysing);
+  const analysis = useStore((s) => s.analysis);
   const toggleWhy = useStore((s) => s.toggleWhy);
   const applySuggestion = useStore((s) => s.applySuggestion);
   const dismissSuggestion = useStore((s) => s.dismissSuggestion);
@@ -145,6 +146,15 @@ export function DetectionStrip() {
   if (!root || decoded.length === 0 || dismissed) return null;
 
   const runs = summariseChain(root);
+  /*
+   * The sentence.
+   *
+   * Everything in it was already on screen — the chain here, the indicators and
+   * findings in the Search view — and joining it up was left to the reader.
+   * That join is the product's promise, so it goes first, above the chips it
+   * summarises, in words rather than in notation.
+   */
+  const summary = explain(root, analysis);
   const confidence = chainConfidence(root);
   const ending = terminus?.identification?.matches[0]?.name ?? null;
   const alreadyApplied = steps.length > 0;
@@ -156,6 +166,29 @@ export function DetectionStrip() {
       className="shrink-0 border-b border-line bg-surface"
       style={{ boxShadow: 'inset 3px 0 0 0 var(--purple)' }}
     >
+      {summary && (
+        <p className="border-b border-line px-3 py-2 text-xs2 leading-relaxed text-text">
+          <span className="font-medium">{summary.headline}</span>
+          {summary.details.length > 0 && (
+            <span className="text-muted"> {summary.details.join(' ')}</span>
+          )}
+          {summary.warning && (
+            <span className="ms-1.5 whitespace-nowrap">
+              <span
+                className="rounded-chip px-1.5 py-px font-mono text-[10px] uppercase tracking-wider"
+                style={{
+                  backgroundColor: 'var(--amber-wash)',
+                  color: summary.warning.severity === 'critical' ? 'var(--red)' : 'var(--amber)',
+                }}
+              >
+                {summary.warning.severity}
+              </span>{' '}
+              <span className="text-muted">{summary.warning.title}</span>
+            </span>
+          )}
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2">
         <ScanSearch size={14} aria-hidden="true" style={{ color: 'var(--purple-text)' }} className="shrink-0" />
 
