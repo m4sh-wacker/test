@@ -145,7 +145,12 @@ jobs:
             exit 1
           fi
 
-          for attempt in 1 2 3 4 5 6 7 8; do
+          # Publishing to a branch is not the end of the pipeline. GitHub queues
+          # its own "pages build and deployment" run afterwards, and only when
+          # that finishes does the CDN start serving the new files. It usually
+          # takes a minute; it has taken twenty. Eight attempts over 160 seconds
+          # was calling that a failure, which is a check that cries wolf.
+          for attempt in $(seq 1 24); do
             body=$(curl -fsSL --max-time 30 "$url" || true)
             case "$body" in
               *"$entry"*)
@@ -153,12 +158,14 @@ jobs:
                 exit 0
                 ;;
               *src/main.tsx*)
-                echo "::error::$url is serving this repository's source index.html instead of the build, so the page is blank."
+                # This one never resolves itself: it means Pages is pointed at
+                # the source branch, so there is no reason to keep waiting.
+                echo "::error::$url is serving this repository's source index.html instead of the build, so the page is blank. Set Settings -> Pages -> Build and deployment -> Source to 'Deploy from a branch', branch 'gh-pages' / (root)."
                 exit 1
                 ;;
             esac
-            echo "Attempt $attempt: $url is not serving $entry yet."
+            echo "Attempt $attempt/24: $url is not serving $entry yet."
             sleep 20
           done
-          echo "::error::$url never served $entry. It may be stuck on an older build - open it and see."
+          echo "::error::$url did not serve $entry within eight minutes. gh-pages has the build - check whether GitHub's own 'pages build and deployment' run is still queued, and re-run this job once it has finished."
           exit 1
