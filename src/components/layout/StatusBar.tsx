@@ -63,13 +63,26 @@ export function StatusBar() {
         {result && !result.error && (
           <span className="font-mono">{result.durationMs.toFixed(1)} ms</span>
         )}
+        {/*
+          Project identity, at the foot where a person looks for it: whose it
+          is, what licence it carries, where the code lives. Three facts, each
+          checkable, none of them a claim of endorsement.
+        */}
         <a
-          href="https://owasp.org"
+          href="https://owasp.org/www-project-decodebox/"
           target="_blank"
           rel="noreferrer noopener"
           className="hidden transition-colors duration-150 ease-smooth hover:text-text sm:inline"
         >
           {t.status.owasp}
+        </a>
+        <a
+          href="https://github.com/OWASP/DecodeBox/blob/main/LICENSE"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="hidden font-mono transition-colors duration-150 ease-smooth hover:text-text xl:inline"
+        >
+          {t.status.licence}
         </a>
         <span className="hidden lg:inline">{t.status.privacy}</span>
       </span>

@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
-import { ChevronRight, GripVertical, Search, Star } from 'lucide-react';
+import { ChevronRight, Clock, GripVertical, Search, Star, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { CATEGORY_ORDER, type OperationDef } from '../../engine';
 import { t } from '../../i18n/en';
@@ -7,6 +7,10 @@ import { cx } from '../ui/helpers';
 import { Pane } from './Pane';
 
 const FAVOURITES = 'Favourites';
+const RECENT = 'Recent';
+
+/** Groups that are yours rather than the catalogue's, in this order. */
+const PERSONAL = [FAVOURITES, RECENT];
 
 function score(op: OperationDef, query: string): number {
   const q = query.toLowerCase();
@@ -135,6 +139,9 @@ function Category({
               open && 'rotate-90',
             )}
           />
+          {name === RECENT && (
+            <Clock size={10} aria-hidden="true" className="shrink-0 text-faint" />
+          )}
           <span className="flex-1 truncate font-mono text-micro uppercase tracking-[0.06em] text-muted">
             {name}
           </span>
@@ -155,6 +162,8 @@ function Category({
 export function OperationsPane() {
   const operations = useStore((s) => s.operations);
   const favourites = useStore((s) => s.favourites);
+  const recent = useStore((s) => s.recent);
+  const addStep = useStore((s) => s.addStep);
   const [query, setQuery] = useState('');
   /*
    * Categories start closed, so the rail opens as a menu of sixteen headings
@@ -182,6 +191,15 @@ export function OperationsPane() {
     const starred = matched.filter((op) => favourites.includes(op.id));
     if (starred.length > 0) byCategory.set(FAVOURITES, starred);
 
+    // Recent excludes anything already starred: the same name twice in two
+    // lists at the top of the rail is noise, and the star is the stronger
+    // signal of the two.
+    const lately = recent
+      .filter((id) => !favourites.includes(id))
+      .map((id) => matched.find((op) => op.id === id))
+      .filter((op): op is OperationDef => op !== undefined);
+    if (lately.length > 0) byCategory.set(RECENT, lately);
+
     for (const op of matched) {
       const list = byCategory.get(op.category) ?? [];
       list.push(op);
@@ -189,11 +207,25 @@ export function OperationsPane() {
     }
 
     return [...byCategory.entries()].sort((a, b) => {
-      if (a[0] === FAVOURITES) return -1;
-      if (b[0] === FAVOURITES) return 1;
+      const ai = PERSONAL.indexOf(a[0]);
+      const bi = PERSONAL.indexOf(b[0]);
+      if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
       return (CATEGORY_ORDER.indexOf(a[0]) + 1 || 99) - (CATEGORY_ORDER.indexOf(b[0]) + 1 || 99);
     });
-  }, [operations, favourites, query]);
+  }, [operations, favourites, recent, query]);
+
+  /*
+   * The top match, for Enter.
+   *
+   * Typing three characters and pressing Enter is how a person who knows what
+   * they want uses a list of five hundred. Without it the keyboard gets you as
+   * far as filtering and then hands you back to the mouse.
+   */
+  const topMatch = useMemo(() => {
+    const q = query.trim();
+    if (!q) return undefined;
+    return grouped.find(([name]) => !PERSONAL.includes(name))?.[1][0];
+  }, [grouped, query]);
 
   const total = grouped.reduce((n, [name, ops]) => n + (name === FAVOURITES ? 0 : ops.length), 0);
   const searching = query.trim().length > 0;
@@ -201,7 +233,11 @@ export function OperationsPane() {
   return (
     <Pane
       title={t.operations.title}
-      meta={<span className="font-mono text-micro text-faint">{total}</span>}
+      meta={
+        <span className="font-mono text-micro tabular-nums text-faint">
+          {searching ? t.operations.matches(total, operations.length) : operations.length}
+        </span>
+      }
     >
       <div className="shrink-0 border-b border-line bg-surface p-2">
         <div className="relative">
@@ -214,12 +250,53 @@ export function OperationsPane() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && topMatch) {
+                event.preventDefault();
+                addStep(topMatch.id);
+              }
+            }}
             placeholder={t.operations.search}
             aria-label={t.operations.search}
+            aria-describedby="operation-search-hint"
             spellCheck={false}
-            className="w-full rounded-control border border-line bg-surface-2 py-1.5 pe-2.5 ps-7 text-micro outline-none transition-colors duration-150 ease-smooth placeholder:text-faint focus:border-purple-line"
+            className="w-full rounded-control border border-line bg-surface-2 py-1.5 pe-14 ps-7 text-micro outline-none transition-colors duration-150 ease-smooth placeholder:text-faint focus:border-purple-line"
           />
+
+          {/*
+            The shortcut is written where the thing it opens is, because a
+            shortcut nobody is told about is a shortcut nobody uses. It gives
+            way to a clear button once there is something to clear.
+          */}
+          {query ? (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label={t.operations.clear}
+              title={t.operations.clear}
+              className="absolute inset-y-0 end-1.5 my-auto grid h-6 w-6 place-items-center rounded text-faint transition-colors hover:bg-surface-3 hover:text-text"
+            >
+              <X size={12} aria-hidden="true" />
+            </button>
+          ) : (
+            <kbd
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 end-2 my-auto flex h-[18px] items-center rounded border border-line px-1.5 font-mono text-[10px] text-faint"
+            >
+              {t.operations.shortcut}
+            </kbd>
+          )}
         </div>
+
+        <p id="operation-search-hint" className="sr-only">
+          {t.operations.searchHint}
+        </p>
+
+        {topMatch && (
+          <p className="mt-1.5 truncate text-[10px] text-faint">
+            {t.operations.enterAdds(topMatch.name)}
+          </p>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">

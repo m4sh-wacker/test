@@ -81,6 +81,7 @@ export function InputPane() {
         className="relative flex min-h-0 flex-1 flex-col"
       >
         <textarea
+          id="decodebox-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           spellCheck={false}

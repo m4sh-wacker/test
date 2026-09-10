@@ -98,22 +98,33 @@ export function OutputPane() {
       meta={
         output.length > 0 && (
           <>
-            <span className="font-mono text-micro text-faint">
+            {/*
+              Four facts at one weight, separated by nothing, read as one
+              unparseable string: "text 16 bytes 1 line auto-decoded". The kind
+              is a label, the measurements are numbers, and the state is a
+              state — so they are drawn as three different things.
+            */}
+            <span className="rounded-chip border border-line px-1.5 py-px font-mono text-[10px] uppercase tracking-wider text-muted">
               {isImage ? 'image' : json ? 'json' : 'text'}
             </span>
-            <span className="font-mono text-micro text-faint">{formatBytes(output.length)}</span>
-            {!isImage && (
-              <span className="font-mono text-micro text-faint">
-                {t.status.lines(shown.split('\n').length)}
-              </span>
-            )}
+            <span className="font-mono text-micro tabular-nums text-faint">
+              {formatBytes(output.length)}
+              {!isImage && ` · ${t.status.lines(shown.split('\n').length)}`}
+            </span>
             {pausedAt !== null && (
-              <span className="font-mono text-micro" style={{ color: 'var(--amber)' }}>
+              <span
+                className="rounded-chip px-1.5 py-px font-mono text-[10px] uppercase tracking-wider"
+                style={{ backgroundColor: 'var(--amber-wash)', color: 'var(--amber)' }}
+              >
                 {t.output.paused}
               </span>
             )}
             {source === 'detection' && (
-              <span className="font-mono text-micro" style={{ color: 'var(--purple-text)' }}>
+              <span
+                title={t.output.fromDetectionHint}
+                className="rounded-chip px-1.5 py-px font-mono text-[10px] uppercase tracking-wider"
+                style={{ backgroundColor: 'var(--purple-soft)', color: 'var(--purple-text)' }}
+              >
                 {t.output.fromDetection}
               </span>
             )}
@@ -147,17 +158,34 @@ export function OutputPane() {
           >
             <ArrowUp size={13} aria-hidden="true" />
           </IconButton>
-          <IconButton
-            label={copied ? t.output.copied : t.output.copy}
+          {/*
+            The one action almost every visit ends in, previously the fourth of
+            five identical 13px glyphs. It keeps its icon, gains its word, and
+            drops the word again when the pane is too narrow to afford it.
+          */}
+          <button
+            type="button"
             onClick={copy}
             disabled={output.length === 0}
+            aria-label={copied ? t.output.copied : t.output.copy}
+            title={t.output.copy}
+            className={cx(
+              'inline-flex h-8 items-center gap-1.5 rounded-control px-2 text-micro font-medium',
+              'transition-colors duration-150 ease-smooth',
+              'disabled:pointer-events-none disabled:opacity-40',
+              copied
+                ? 'text-text'
+                : 'border border-line text-muted hover:border-line-strong hover:bg-surface-3 hover:text-text',
+            )}
+            style={copied ? { borderColor: 'var(--green)', borderWidth: 1, borderStyle: 'solid' } : undefined}
           >
             {copied ? (
               <Check size={13} aria-hidden="true" style={{ color: 'var(--green)' }} />
             ) : (
               <Copy size={13} aria-hidden="true" />
             )}
-          </IconButton>
+            <span className="max-lg:hidden">{copied ? t.output.copied : t.output.copyShort}</span>
+          </button>
           <IconButton
             label={t.output.download}
             onClick={download}
@@ -180,7 +208,17 @@ export function OutputPane() {
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-auto">
+      {/*
+        The answer gets its own ground.
+
+        Everything above this line is the tool explaining itself — what it
+        found, how sure it is, what it ran. This is the thing the person came
+        for, and on the page background at body weight it was indistinguishable
+        from the commentary. A surface of its own, full text contrast and room
+        to breathe is the whole difference between "here is some output" and
+        "here is your answer".
+      */}
+      <div className="min-h-0 flex-1 overflow-auto bg-surface">
         {output.length === 0 ? null : isImage ? (
           // Rendered from a data: URI, which the CSP permits for images and
           // nothing else. SVG never reaches here — the operation refuses it,
@@ -197,7 +235,7 @@ export function OutputPane() {
         ) : (
           <pre
             className={cx(
-              'p-3 font-mono text-[0.875rem] leading-[1.75]',
+              'p-3 font-mono text-[0.9375rem] leading-[1.7] text-text',
               wrap ? 'whitespace-pre-wrap break-all' : 'whitespace-pre',
             )}
           >

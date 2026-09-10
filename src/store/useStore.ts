@@ -48,6 +48,15 @@ interface State {
   steps: RecipeStep[];
   operations: OperationDef[];
   favourites: string[];
+  /**
+   * The operations most recently added, newest first.
+   *
+   * Five hundred operations and sixteen categories means the one you used
+   * ten minutes ago is as hard to find as one you have never used. Starring
+   * is a decision; this costs nothing and covers the case where you did not
+   * know yet that you would want it again.
+   */
+  recent: string[];
   savedRecipes: SavedRecipe[];
 
   /** Step uids paused on. Kept out of the engine contract: baking a prefix
@@ -70,6 +79,14 @@ interface State {
   identification: HashIdentification | null;
   /** The full report, computed alongside detection. */
   analysis: Analysis | null;
+  /**
+   * How deep auto-decoding is allowed to go.
+   *
+   * A number rather than a constant because "the depth limit was reached" is
+   * only useful if the reader can do something about it. Raising it is the
+   * something.
+   */
+  decodeDepth: number;
   whyOpen: boolean;
   suggestionDismissed: boolean;
 
@@ -127,6 +144,8 @@ interface State {
   setCtfFormat: (format: string) => void;
   applyHint: (hint: Hint) => void;
 
+  /** Re-runs detection with more headroom, from the depth it stopped at. */
+  analyseDeeper: () => void;
   saveCurrentRecipe: (name: string, steps?: RecipeStep[]) => void;
   loadSavedRecipe: (id: string) => void;
   removeSavedRecipe: (id: string) => void;
@@ -144,6 +163,8 @@ interface State {
 const THEME_KEY = 'decodebox-theme';
 const PANES_KEY = 'decodebox-panes';
 const FAVOURITES_KEY = 'decodebox-favourites';
+const RECENT_KEY = 'decodebox-recent';
+const RECENT_LIMIT = 8;
 const ENCODING_KEY = 'decodebox-input-encoding';
 const CTF_FORMAT_KEY = 'decodebox-ctf-format';
 
@@ -197,6 +218,22 @@ function newStep(op: OperationDef): RecipeStep {
 
 // Rising counters so a slow run can never overwrite the result of a newer one.
 let bakeToken = 0;
+/**
+ * Where auto-decoding stops unless asked otherwise.
+ *
+ * Matches the engine's own default. Six layers covers essentially everything
+ * seen in the wild, and the bound exists so a crafted input cannot make the
+ * page work forever — which is why raising it is a decision the reader takes,
+ * not something that happens quietly on their behalf.
+ */
+const DEFAULT_DECODE_DEPTH = 6;
+
+/** One press of "go deeper" is worth this much more rope. */
+const DEPTH_INCREMENT = 6;
+
+/** Past this, the time budget is doing the stopping anyway. */
+const MAX_DECODE_DEPTH = 24;
+
 let analysisToken = 0;
 let ctfToken = 0;
 
@@ -206,6 +243,7 @@ export const useStore = create<State>((set, get) => ({
   steps: [],
   operations: [],
   favourites: read<string[]>(FAVOURITES_KEY, []),
+  recent: read<string[]>(RECENT_KEY, []),
   savedRecipes: loadRecipes(),
 
   selectedStepUid: null,
@@ -223,6 +261,7 @@ export const useStore = create<State>((set, get) => ({
   candidates: [],
   identification: null,
   analysis: null,
+  decodeDepth: DEFAULT_DECODE_DEPTH,
   whyOpen: false,
   suggestionDismissed: false,
 
@@ -244,7 +283,10 @@ export const useStore = create<State>((set, get) => ({
       set({ inputEncoding: encoding });
       write(ENCODING_KEY, encoding);
     }
-    set({ input: value, suggestionDismissed: false });
+    // A depth raised for one payload has nothing to do with the next one, and
+    // silently keeping it would make the same input behave differently
+    // depending on what was pasted before it.
+    set({ input: value, suggestionDismissed: false, decodeDepth: DEFAULT_DECODE_DEPTH });
     if (value.trim().length === 0) {
       set({
         root: null,
@@ -270,6 +312,7 @@ export const useStore = create<State>((set, get) => ({
   clearInput: () =>
     set({
       input: '',
+      decodeDepth: DEFAULT_DECODE_DEPTH,
       root: null,
       chain: [],
       activeLayerId: null,
@@ -303,6 +346,10 @@ export const useStore = create<State>((set, get) => ({
   addStep: (opId, atIndex) => {
     const op = get().operations.find((o) => o.id === opId);
     if (!op) return;
+
+    const recent = [opId, ...get().recent.filter((id) => id !== opId)].slice(0, RECENT_LIMIT);
+    set({ recent });
+    write(RECENT_KEY, recent);
     const steps = [...get().steps];
     const added = newStep(op);
     steps.splice(atIndex ?? steps.length, 0, added);
@@ -461,7 +508,7 @@ export const useStore = create<State>((set, get) => ({
     set({ analysing: true });
 
     const [root, candidates, report] = await Promise.all([
-      autoDecode(bytes),
+      autoDecode(bytes, { maxDepth: get().decodeDepth }),
       detect(bytes),
       analyse(bytes),
     ]);
@@ -481,6 +528,13 @@ export const useStore = create<State>((set, get) => ({
       activeLayerId: chain[chain.length - 1]?.id ?? root.id,
       analysing: false,
     });
+  },
+
+  analyseDeeper: () => {
+    const next = Math.min(get().decodeDepth + DEPTH_INCREMENT, MAX_DECODE_DEPTH);
+    if (next === get().decodeDepth) return;
+    set({ decodeDepth: next });
+    void get().analyse();
   },
 
   applySuggestion: () => {

@@ -328,14 +328,32 @@ export function Pipeline() {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="flex cursor-pointer items-center gap-1.5 text-micro text-faint">
+          {/*
+            A checkbox and a primary button that do the same thing.
+
+            With "run automatically" ticked, the recipe has already run by the
+            time the button is drawn, so pressing it re-runs a result that is
+            already on screen — an action whose only honest label is "again".
+            The button therefore stops being primary while the checkbox is on
+            and says what it is for, and the checkbox says what it is doing
+            rather than naming a setting.
+          */}
+          {/*
+            The checkbox itself is 12px. The label is the target, and at 16px
+            high it was still under the 24px WCAG 2.5.8 asks for, so it gets the
+            padding to clear it. Nothing moves visually; the hit area grows.
+          */}
+          <label
+            className="flex cursor-pointer items-center gap-1.5 rounded-control py-1 text-micro text-faint transition-colors hover:text-muted"
+            title={t.recipe.autoBakeHint}
+          >
             <input
               type="checkbox"
               checked={autoBake}
               onChange={(e) => setAutoBake(e.target.checked)}
               className="h-3 w-3 accent-[var(--purple)]"
             />
-            {t.recipe.autoBake}
+            {autoBake ? t.recipe.autoBaking : t.recipe.autoBake}
           </label>
 
           <button
@@ -369,11 +387,14 @@ export function Pipeline() {
               // Solid, not an outline: white on this purple measures 4.60:1,
               // where the background tokens land at 4.33 and 4.48 — both just
               // under AA for text this size.
-              empty ? 'border border-line text-faint' : 'bg-purple text-white hover:brightness-110',
+              empty || autoBake
+                ? 'border border-line text-muted hover:border-line-strong hover:bg-surface-3'
+                : 'bg-purple text-white hover:brightness-110',
             )}
           >
             <Play size={13} aria-hidden="true" />
-            {baking ? t.recipe.baking : t.recipe.bake}
+            {/* "Run again" is a lie before anything has run once. */}
+            {baking ? t.recipe.baking : autoBake && !empty ? t.recipe.rerun : t.recipe.bake}
           </button>
         </div>
       </div>

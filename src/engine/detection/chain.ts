@@ -57,6 +57,52 @@ export function describeChain(root: Layer): string {
   return parts.join(' → ') + (terminus && !terminus.complete ? ' → …' : '');
 }
 
+/** One format and how many times in a row it appeared. */
+export interface ChainRun {
+  format: string;
+  count: number;
+}
+
+/**
+ * The chain with its repeats collapsed: `Base64 x7` rather than Base64 written
+ * out seven times.
+ *
+ * Seven identical chips say one thing seven times, and they say it in the width
+ * of the window — at 1440px the run overflowed its own container and the
+ * ending, which is the part that matters, was the part that got cut off. A run
+ * length says the same thing in two words and leaves room for the answer.
+ *
+ * The full chain is still there and still inspectable. This is what to lead
+ * with, not what to replace it with.
+ */
+export function summariseChain(root: Layer): ChainRun[] {
+  const runs: ChainRun[] = [];
+  for (const layer of toChain(root).slice(1)) {
+    const last = runs[runs.length - 1];
+    if (last && last.format === layer.format) last.count += 1;
+    else runs.push({ format: layer.format, count: 1 });
+  }
+  return runs;
+}
+
+/** `summariseChain` as one line, for a title attribute or a copied report. */
+export function describeRuns(runs: ChainRun[]): string {
+  return runs.map((run) => (run.count > 1 ? `${run.format} x${run.count}` : run.format)).join(' - ');
+}
+
+/**
+ * How far to trust the chain as a whole.
+ *
+ * The weakest link, not the average: a chain is only as good as the least
+ * convincing step in it, and averaging lets six confident layers hide one
+ * guess.
+ */
+export function chainConfidence(root: Layer): number {
+  const decoded = toChain(root).slice(1);
+  if (decoded.length === 0) return 0;
+  return Math.min(...decoded.map((layer) => layer.confidence));
+}
+
 export function chainPreview(root: Layer): string {
   return previewText(lastLayer(root).output);
 }

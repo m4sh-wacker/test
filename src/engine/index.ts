@@ -117,6 +117,9 @@ export { workerActive, WORKER_THRESHOLD } from './worker/client';
 export {
   toChain,
   describeChain,
+  summariseChain,
+  describeRuns,
+  chainConfidence,
   chainPreview,
   terminusOf,
   terminusName,
@@ -133,6 +136,7 @@ export type { Signature } from './core/signatures';
 export { CHARSET_NAMES, ENCODABLE_CHARSET_NAMES } from './core/charsets';
 
 export type { AutoDecodeOptions } from './detection/autoDecode';
+export type { ChainRun } from './detection/chain';
 export type { CtfOptions, CtfReport, FoundFlag, Hint, HintKind } from './ctf/types';
 export type {
   Analysis,

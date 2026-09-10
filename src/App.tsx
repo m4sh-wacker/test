@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from './store/useStore';
+import { t } from './i18n/en';
 import { useAnalysis } from './hooks/useAnalysis';
 import { useHotkeys } from './hooks/useHotkeys';
 import { Header } from './components/layout/Header';
@@ -26,6 +27,18 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
+      {/*
+        Tab order follows the page, and the page puts five hundred operations in
+        sixteen headings before it gets to the box you type in. Seventeen
+        presses to reach the primary control is not a keyboard interface. This
+        is the standard answer: invisible until focused, first in the order.
+      */}
+      <a
+        href="#decodebox-input"
+        className="sr-only rounded-control border border-purple-line bg-surface px-3 py-2 text-xs2 font-medium text-text focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-50"
+      >
+        {t.layout.skipToInput}
+      </a>
       <Header />
       {view === 'workspace' && <Workspace />}
       {view === 'ctf' && <CtfView />}

@@ -289,4 +289,11 @@ export async function autoDecode(
   return root;
 }
 
-export { toChain, describeChain, chainPreview } from './chain';
+export {
+  toChain,
+  describeChain,
+  chainPreview,
+  summariseChain,
+  describeRuns,
+  chainConfidence,
+} from './chain';

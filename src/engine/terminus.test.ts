@@ -1,6 +1,17 @@
 import { gzipSync } from 'node:zlib';
+import type { Layer } from './index';
 import { describe, expect, it } from 'vitest';
-import { autoDecode, describeChain, terminusOf, terminusName, lastLayer, toChain } from './index';
+import {
+  autoDecode,
+  chainConfidence,
+  describeChain,
+  describeRuns,
+  lastLayer,
+  summariseChain,
+  terminusOf,
+  terminusName,
+  toChain,
+} from './index';
 import { terminalIdentification } from './detection/identify';
 
 /**
@@ -168,6 +179,84 @@ describe('short layers', () => {
     // asked before the length excuse for exactly this reason.
     const end = terminusOf(await autoDecode('550e8400-e29b-41d4-a716-446655440000'));
     expect(end?.reason).toBe('identified');
+  });
+});
+
+/**
+ * A chain of seven identical layers is one finding, not seven. Drawn as seven
+ * equal chips it overflowed its own container at 1440px and pushed the decoded
+ * result below the fold — the answer lost the argument to the working.
+ */
+describe('summarising a chain', () => {
+  const SEVEN = (() => {
+    let value = 'the flag is here';
+    for (let i = 0; i < 7; i++) value = Buffer.from(value).toString('base64');
+    return value;
+  })();
+
+  it('collapses a run of one format into a count', async () => {
+    const root = await autoDecode(SEVEN, { maxDepth: 12 });
+    const runs = summariseChain(root);
+
+    expect(runs).toHaveLength(1);
+    expect(runs[0]?.format).toBe('Base64');
+    expect(runs[0]?.count).toBe(7);
+    expect(describeRuns(runs)).toBe('Base64 x7');
+  });
+
+  it('keeps separate formats separate, and only collapses neighbours', () => {
+    const layer = (format: string, depth: number): Layer => ({
+      id: `${format}-${depth}`,
+      depth,
+      format,
+      confidence: 0.8,
+      byteLength: 1,
+      output: '',
+      evidence: [],
+      steps: [],
+      children: [],
+    });
+
+    // Input → A → A → B → A: the last A is not part of the first run.
+    const root = layer('Input', 0);
+    let node = root;
+    for (const [format, depth] of [['A', 1], ['A', 2], ['B', 3], ['A', 4]] as const) {
+      const child = layer(format, depth);
+      node.children.push(child);
+      node = child;
+    }
+
+    expect(describeRuns(summariseChain(root))).toBe('A x2 - B - A');
+  });
+
+  it('reports the weakest layer, not the average of them', async () => {
+    const root = await autoDecode(SEVEN, { maxDepth: 12 });
+    const confidences = toChain(root).slice(1).map((l) => l.confidence);
+
+    expect(chainConfidence(root)).toBe(Math.min(...confidences));
+  });
+
+  it('says nothing about a chain that decoded nothing', async () => {
+    const root = await autoDecode('just some ordinary words here');
+    expect(summariseChain(root)).toEqual([]);
+    expect(chainConfidence(root)).toBe(0);
+  });
+
+  /*
+   * The depth limit is a real bound, not a formality: raising it is the action
+   * the interface offers when a chain stops early, so it has to actually reach
+   * further.
+   */
+  it('goes further when allowed further', async () => {
+    const shallow = await autoDecode(SEVEN, { maxDepth: 3 });
+    const deep = await autoDecode(SEVEN, { maxDepth: 12 });
+
+    expect(terminusOf(shallow)?.reason).toBe('depth');
+    expect(terminusOf(shallow)?.complete).toBe(false);
+    expect(toChain(shallow)).toHaveLength(4);
+
+    expect(toChain(deep).length).toBeGreaterThan(toChain(shallow).length);
+    expect(lastLayer(deep).output).toBe('the flag is here');
   });
 });
 

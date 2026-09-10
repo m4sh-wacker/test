@@ -107,6 +107,9 @@
   --blue: #2563eb;
   --red: #c81e1e;
 
+  /* Backgrounds for states that need to be noticed without shouting. */
+  --amber-wash: rgba(160, 70, 7, 0.07);
+
   --glow: none;
   --overlay-shadow: 0 8px 32px rgba(16, 17, 20, 0.14);
 }
@@ -142,6 +145,8 @@
     --blue: #4a7bfe;
     --red: #ef4444;
 
+    --amber-wash: rgba(251, 191, 36, 0.08);
+
     --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
     --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
@@ -173,6 +178,8 @@
   --amber: #fbbf24;
   --blue: #4a7bfe;
   --red: #ef4444;
+
+  --amber-wash: rgba(251, 191, 36, 0.08);
 
   --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
   --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);

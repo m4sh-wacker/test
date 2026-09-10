@@ -51,15 +51,31 @@ export function Header() {
       />
 
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-3 sm:gap-4">
-        <div className="flex min-w-0 items-baseline gap-2">
-          <span className="self-center">
-            <Logomark />
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Logomark />
+
+          {/*
+            Two lines, because the affiliation is a fact about the project and
+            not a subtitle for the tool. Stacked under the name it reads in the
+            same glance; beside it, it read as marketing. The strapline only
+            claims what is true — an OWASP Foundation project, Apache-2.0 — and
+            never "official", which is a status this does not have.
+          */}
+          <span className="flex min-w-0 flex-col justify-center leading-none">
+            <span className="truncate font-brand text-[0.8125rem] font-semibold tracking-tight sm:text-[0.9375rem]">
+              <span style={{ color: 'var(--purple-text)' }}>OWASP</span>
+              <span className="ms-1.5 text-text">DecodeBox</span>
+            </span>
+            <span className="mt-[3px] hidden truncate text-[10px] leading-none text-faint lg:inline">
+              {t.app.affiliation}
+            </span>
           </span>
-          <span className="truncate font-brand text-[0.8125rem] font-semibold leading-none tracking-tight sm:text-[0.9375rem]">
-            <span style={{ color: 'var(--purple-text)' }}>OWASP</span>
-            <span className="ms-1.5 text-text">DecodeBox</span>
-          </span>
-          <span className="hidden text-micro text-faint sm:inline">{t.app.tagline}</span>
+
+          <span
+            aria-hidden="true"
+            className="mx-1 hidden h-5 w-px bg-line xl:block"
+          />
+          <span className="hidden text-micro text-faint xl:inline">{t.app.tagline}</span>
 
           {/* Beside the name rather than in the icon strip on the right. The
               offer is "take this away with you", which belongs with the
@@ -118,38 +134,54 @@ export function Header() {
             </button>
           </div>
 
-          <RailToggle />
+          {/*
+            Six icons in a row, previously in the order they happened to be
+            written: the pane toggle sat with nothing, and Share, theme and
+            GitHub ran together as one undifferentiated strip.
+            They group into three things a person actually distinguishes —
+            what to do with this recipe, how to arrange the window, where to
+            get help — and the rules make the grouping visible instead of
+            decorative. Each keeps its label for a screen reader and its
+            tooltip for everyone else; at this density, six words across the
+            top would cost more than the icons do.
+          */}
+          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
+
+          <span role="group" aria-label={t.header.recipeActions} className="flex items-center gap-0.5">
+            <IconButton label={t.header.share} onClick={() => setDialog('share')}>
+              <Link2 size={15} aria-hidden="true" />
+            </IconButton>
+            <IconButton label={t.header.library} onClick={() => setDialog('library')}>
+              <Save size={15} aria-hidden="true" />
+            </IconButton>
+          </span>
 
           <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
 
-          <IconButton label={t.header.share} onClick={() => setDialog('share')}>
-            <Link2 size={15} aria-hidden="true" />
-          </IconButton>
-
-          <IconButton label={t.header.library} onClick={() => setDialog('library')}>
-            <Save size={15} aria-hidden="true" />
-          </IconButton>
+          <span role="group" aria-label={t.header.viewActions} className="flex items-center gap-0.5">
+            <RailToggle />
+            <IconButton label={t.header.theme} onClick={() => setTheme(isDark ? 'light' : 'dark')}>
+              {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
+            </IconButton>
+          </span>
 
           <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
 
-          <IconButton label={t.header.theme} onClick={() => setTheme(isDark ? 'light' : 'dark')}>
-            {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
-          </IconButton>
-
-          <IconButton label={t.header.help} onClick={() => setDialog('help')} className="max-sm:hidden">
-            <Keyboard size={15} aria-hidden="true" />
-          </IconButton>
-
-          <a
-            href="https://github.com/OWASP/DecodeBox"
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label={t.header.github}
-            title={t.header.github}
-            className="inline-grid h-8 w-8 place-items-center rounded-control text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-sm:hidden"
-          >
-            <Github size={15} aria-hidden="true" />
-          </a>
+          <span role="group" aria-label={t.header.helpActions} className="flex items-center gap-0.5">
+            <IconButton label={t.header.help} onClick={() => setDialog('help')} className="max-sm:hidden">
+              <Keyboard size={15} aria-hidden="true" />
+            </IconButton>
+            <a
+              href="https://github.com/OWASP/DecodeBox"
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label={t.header.github}
+              title={t.header.github}
+              className="inline-grid h-8 w-8 place-items-center rounded-control text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-sm:hidden"
+            >
+              <Github size={15} aria-hidden="true" />
+            </a>
+          </span>
         </div>
       </header>
     </>

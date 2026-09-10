@@ -7,6 +7,15 @@ export const t = {
     name: 'DecodeBox',
     org: 'OWASP',
     tagline: 'encode · decode · identify',
+    /*
+     * What the project is, stated exactly.
+     *
+     * "An OWASP Foundation Project" is a description of governance and is true.
+     * "Official OWASP tool" would be a claim about endorsement that no project
+     * at this stage is entitled to make, so it is not made anywhere.
+     */
+    affiliation: 'An OWASP Foundation Project',
+    licence: 'Apache-2.0',
   },
 
   common: {
@@ -17,6 +26,9 @@ export const t = {
     download: 'Download DecodeBox',
     theme: 'Switch theme',
     github: 'Source on GitHub',
+    recipeActions: 'Recipe actions',
+    viewActions: 'View',
+    helpActions: 'Help and source',
     help: 'Keyboard shortcuts',
     share: 'Share this recipe',
     library: 'Saved recipes',
@@ -26,6 +38,7 @@ export const t = {
 
   layout: {
     panes: 'Workspace panes',
+    skipToInput: 'Skip to input',
     resizeOperations: 'Resize the operations pane',
     resizeRecipe: 'Resize the recipe pane',
     hideOperations: 'Hide the operations list',
@@ -35,6 +48,11 @@ export const t = {
   operations: {
     title: 'Operations',
     search: 'Search operations',
+    searchHint: 'Type to filter. Press Enter to add the first match to the recipe.',
+    shortcut: 'Ctrl K',
+    clear: 'Clear the search',
+    matches: (shown: number, total: number) => `${shown} of ${total}`,
+    enterAdds: (name: string) => `Enter adds ${name}`,
     noResults: 'Nothing matches that.',
     loading: 'Loading the engine…',
     hint: 'Click or drag an operation into the recipe',
@@ -63,10 +81,17 @@ export const t = {
     clearBreakpoint: 'Remove the pause',
     pausedAt: (n: number) => `paused before step ${n}`,
     step: 'Run one more step',
-    bake: 'Bake',
-    baking: 'Baking…',
-    autoBaking: 'Auto-baking',
-    autoBake: 'Bake automatically',
+    /*
+     * "Bake" is CyberChef's word for this and carries none of its meaning to
+     * anyone who has not used CyberChef. Running a recipe is running it.
+     */
+    bake: 'Run',
+    rerun: 'Run again',
+    baking: 'Running…',
+    autoBaking: 'Runs automatically',
+    autoBake: 'Run automatically',
+    autoBakeHint:
+      'Re-runs the recipe whenever the input or a step changes. Turn it off for a recipe that is slow or has side effects you would rather trigger yourself.',
     showText: 'Edit the recipe as text',
     showVisual: 'Back to the step list',
     textLabel: 'Recipe as JSON',
@@ -88,10 +113,13 @@ export const t = {
   output: {
     title: 'Output',
     fromDetection: 'auto-decoded',
+    fromDetectionHint:
+      'This is what detection unwrapped, not the recipe. Use as recipe to make it editable.',
     imageAlt: 'The decoded image',
     imageNote: 'Rendered locally. This image was never uploaded anywhere.',
     paused: 'paused',
     copy: 'Copy the output',
+    copyShort: 'Copy',
     copied: 'Copied',
     download: 'Download the output',
     wrap: 'Toggle word wrap',
@@ -101,16 +129,51 @@ export const t = {
   },
 
   detection: {
+    region: 'What DecodeBox detected',
     label: 'Detected',
-    analysing: 'Analysing…',
-    apply: 'Apply as recipe',
-    why: 'Why?',
-    dismiss: 'Dismiss this suggestion',
+    analysing: 'Identifying…',
+    /*
+     * "Apply as recipe" described the mechanism. What the reader wants to know
+     * is what they get: the steps land in the recipe, editable, and from then
+     * on the chain is theirs rather than the engine's.
+     */
+    apply: 'Use as recipe',
+    applyHint: 'Put these steps in the recipe, where you can edit and re-run them',
+    layers: (n: number) => `${n} ${n === 1 ? 'layer' : 'layers'}`,
+    why: 'Evidence',
+    whyHint: 'The measurements behind this identification',
+    dismiss: 'Hide this detection',
     whyTitle: (format: string) => `Why we think this is ${format}`,
     /** How the chain ends. Shown as the last node, so it reads as part of it. */
     endsIn: 'ends in',
     incomplete: 'more below',
-    incompleteTitle: 'The chain stopped early — there may be another layer under this',
+    /*
+     * A heading, not a sentence: this is a state the reader can act on, and the
+     * action sits beside it. The old copy — "The chain stopped early, there may
+     * be another layer under this" — read as a footnote and was treated as one.
+     */
+    incompleteTitle: 'More layers may exist',
+    deeper: (depth: number) => `Look deeper than ${depth}`,
+    deepening: 'Looking…',
+  },
+
+  /*
+   * Confidence is not progress.
+   *
+   * It was drawn as a bar that fills left to right, directly above a pane whose
+   * whole job is running things, and it was read as a progress bar. The word
+   * alongside the number is what carries the meaning when the colours cannot.
+   */
+  confidence: {
+    label: 'Confidence',
+    explain: 'How sure the identification is — not how far it has got',
+    aria: (percent: number, band: string) =>
+      `Detection confidence ${percent} percent, ${band}`,
+    high: 'near certain',
+    good: 'strong',
+    medium: 'reasonable',
+    low: 'weak',
+    weak: 'a guess',
   },
 
   /*
@@ -233,7 +296,9 @@ export const t = {
     lines: (n: number) => `${n} ${n === 1 ? 'line' : 'lines'}`,
     steps: 'steps',
     privacy: 'Everything runs in your browser — nothing is uploaded',
-    owasp: 'An OWASP Foundation project',
+    owasp: 'An OWASP Foundation Project',
+    source: 'Source',
+    licence: 'Apache-2.0',
   },
 
   download: {
@@ -264,7 +329,7 @@ export const t = {
     title: 'Keyboard shortcuts',
     note: 'Steps can also be reordered with the arrow buttons, so nothing here needs a mouse.',
     shortcuts: [
-      ['Ctrl / Cmd + Enter', 'Bake the recipe'],
+      ['Ctrl / Cmd + Enter', 'Run the recipe'],
       ['Ctrl / Cmd + Shift + C', 'Copy the output'],
       ['Ctrl / Cmd + K', 'Focus the operation search'],
       ['Ctrl / Cmd + S', 'Save or load a recipe'],
