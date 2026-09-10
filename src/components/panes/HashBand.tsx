@@ -50,6 +50,32 @@ export function HashBand() {
           {Math.round(best.confidence * 100)}%
         </span>
 
+        {/*
+          Salted or not is the first question anyone holding a hash has: an
+          unsalted digest may simply be in a lookup table and a salted one never
+          is. It was being computed and not shown.
+        */}
+        {best.salt && (
+          <span
+            title={best.salt.note}
+            className="rounded-chip px-1.5 py-px font-mono text-[10px] uppercase tracking-wider"
+            style={
+              best.salt.present
+                ? { backgroundColor: 'var(--purple-soft)', color: 'var(--purple-text)' }
+                : { backgroundColor: 'var(--amber-wash)', color: 'var(--amber)' }
+            }
+          >
+            {best.salt.present ? t.hash.salted : t.hash.unsalted}
+          </span>
+        )}
+
+        {best.salt?.value && (
+          <span className="font-mono text-micro text-muted">
+            {t.hash.saltIs}{' '}
+            <code className="rounded-chip bg-surface-2 px-1 text-text">{best.salt.value}</code>
+          </span>
+        )}
+
         <span className="font-mono text-micro text-faint">{identification.summary}</span>
       </div>
 

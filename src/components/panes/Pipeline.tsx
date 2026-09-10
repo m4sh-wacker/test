@@ -119,12 +119,21 @@ function Node({ index }: { index: number }) {
         a step out did nothing while clicking the cross worked fine. This is a
         plain span, which drags, and it says so with a cursor and a grip.
       */}
+      {/*
+        The grip is always visible, not on hover.
+
+        Fading it in on hover meant you had to know it was there to look for
+        it, and it is the thing that says this chip can be moved at all. It is
+        quiet rather than hidden, and it is wide enough to hit: 11px of icon in
+        a 16px target, which is the difference between picking a step up and
+        chasing it.
+      */}
       <span
         aria-hidden="true"
-        className="flex shrink-0 cursor-grab items-center text-faint opacity-40 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+        className="flex w-4 shrink-0 cursor-grab items-center justify-center text-faint transition-colors hover:text-muted active:cursor-grabbing"
         title={t.recipe.drag}
       >
-        <GripVertical size={11} />
+        <GripVertical size={12} />
       </span>
 
       <button

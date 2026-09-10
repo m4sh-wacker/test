@@ -90,6 +90,15 @@ export interface HashMatch {
   reason: string;
   /** Where this format is normally found. */
   context?: string;
+  /**
+   * What is known about the salt.
+   *
+   * Whether a digest is salted decides what can be done with it: an unsalted
+   * MD5 is a rainbow-table lookup and a salted one is not, and that is the
+   * first thing anyone holding a hash needs to know. `value` is filled in only
+   * for the formats that carry the salt in the open where it can be read off.
+   */
+  salt?: { present: boolean; value?: string; note: string };
 }
 
 export interface HashIdentification {

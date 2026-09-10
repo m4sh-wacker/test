@@ -299,6 +299,9 @@ export const t = {
 
   hash: {
     label: 'Looks like',
+    salted: 'salted',
+    unsalted: 'no salt',
+    saltIs: 'salt',
     alsoPossible: 'Could also be',
     oneWay:
       'Hashes are one-way. There is nothing here to decode — you would need a wordlist or a lookup service.',

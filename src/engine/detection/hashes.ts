@@ -22,6 +22,14 @@ interface PrefixRule {
   name: string;
   context: string;
   confidence: number;
+  /**
+   * Whether the format embeds a salt.
+   *
+   * Left unset where the answer is "no". Saying so matters more than it looks:
+   * the difference between a salted digest and an unsalted one is the
+   * difference between cracking a password and looking one up.
+   */
+  salted?: boolean;
 }
 
 /**
@@ -29,34 +37,34 @@ interface PrefixRule {
  * match is close to proof rather than a guess.
  */
 const PREFIXED: PrefixRule[] = [
-  { test: /^\$2[abxy]?\$\d{2}\$[./A-Za-z0-9]{53}$/, name: 'bcrypt', context: 'Unix password hashing, and the default in many web frameworks', confidence: 0.99 },
-  { test: /^\$argon2(id|i|d)\$/, name: 'Argon2', context: 'Modern password hashing; winner of the Password Hashing Competition', confidence: 0.99 },
-  { test: /^\$scrypt\$|^\$7\$/, name: 'scrypt', context: 'Memory-hard password hashing', confidence: 0.98 },
-  { test: /^\$y\$/, name: 'yescrypt', context: 'Default on recent Debian and Fedora systems', confidence: 0.97 },
-  { test: /^\$6\$/, name: 'SHA-512 crypt', context: 'Linux /etc/shadow', confidence: 0.98 },
-  { test: /^\$5\$/, name: 'SHA-256 crypt', context: 'Linux /etc/shadow', confidence: 0.98 },
-  { test: /^\$1\$/, name: 'MD5 crypt', context: 'Legacy Unix /etc/shadow, and Cisco type 5', confidence: 0.98 },
-  { test: /^\$apr1\$/, name: 'Apache MD5 (APR1)', context: 'Apache .htpasswd files', confidence: 0.98 },
-  { test: /^\$sha1\$\d+\$/, name: 'SHA-1 crypt', context: 'NetBSD', confidence: 0.96 },
-  { test: /^\$md5[,$]/, name: 'Sun MD5 crypt', context: 'Solaris', confidence: 0.95 },
-  { test: /^\$P\$[./A-Za-z0-9]{31}$/, name: 'phpass (portable)', context: 'WordPress and phpBB3', confidence: 0.97 },
-  { test: /^\$H\$[./A-Za-z0-9]{31}$/, name: 'phpass (phpBB3)', context: 'phpBB3', confidence: 0.97 },
-  { test: /^\$S\$[./A-Za-z0-9]{52}$/, name: 'Drupal 7 (SHA-512)', context: 'Drupal 7', confidence: 0.97 },
-  { test: /^\$pbkdf2(-sha(1|256|512))?\$/, name: 'PBKDF2 (passlib)', context: 'Python passlib', confidence: 0.97 },
-  { test: /^pbkdf2_sha(1|256|512)\$\d+\$/, name: 'PBKDF2 (Django)', context: 'Django user accounts', confidence: 0.98 },
-  { test: /^\{SSHA\}/, name: 'Salted SHA-1 (LDAP)', context: 'OpenLDAP', confidence: 0.98 },
+  { test: /^\$2[abxy]?\$\d{2}\$[./A-Za-z0-9]{53}$/, name: 'bcrypt', salted: true, context: 'Unix password hashing, and the default in many web frameworks', confidence: 0.99 },
+  { test: /^\$argon2(id|i|d)\$/, name: 'Argon2', salted: true, context: 'Modern password hashing; winner of the Password Hashing Competition', confidence: 0.99 },
+  { test: /^\$scrypt\$|^\$7\$/, name: 'scrypt', salted: true, context: 'Memory-hard password hashing', confidence: 0.98 },
+  { test: /^\$y\$/, name: 'yescrypt', salted: true, context: 'Default on recent Debian and Fedora systems', confidence: 0.97 },
+  { test: /^\$6\$/, name: 'SHA-512 crypt', salted: true, context: 'Linux /etc/shadow', confidence: 0.98 },
+  { test: /^\$5\$/, name: 'SHA-256 crypt', salted: true, context: 'Linux /etc/shadow', confidence: 0.98 },
+  { test: /^\$1\$/, name: 'MD5 crypt', salted: true, context: 'Legacy Unix /etc/shadow, and Cisco type 5', confidence: 0.98 },
+  { test: /^\$apr1\$/, name: 'Apache MD5 (APR1)', salted: true, context: 'Apache .htpasswd files', confidence: 0.98 },
+  { test: /^\$sha1\$\d+\$/, name: 'SHA-1 crypt', salted: true, context: 'NetBSD', confidence: 0.96 },
+  { test: /^\$md5[,$]/, name: 'Sun MD5 crypt', salted: true, context: 'Solaris', confidence: 0.95 },
+  { test: /^\$P\$[./A-Za-z0-9]{31}$/, name: 'phpass (portable)', salted: true, context: 'WordPress and phpBB3', confidence: 0.97 },
+  { test: /^\$H\$[./A-Za-z0-9]{31}$/, name: 'phpass (phpBB3)', salted: true, context: 'phpBB3', confidence: 0.97 },
+  { test: /^\$S\$[./A-Za-z0-9]{52}$/, name: 'Drupal 7 (SHA-512)', salted: true, context: 'Drupal 7', confidence: 0.97 },
+  { test: /^\$pbkdf2(-sha(1|256|512))?\$/, name: 'PBKDF2 (passlib)', salted: true, context: 'Python passlib', confidence: 0.97 },
+  { test: /^pbkdf2_sha(1|256|512)\$\d+\$/, name: 'PBKDF2 (Django)', salted: true, context: 'Django user accounts', confidence: 0.98 },
+  { test: /^\{SSHA\}/, name: 'Salted SHA-1 (LDAP)', salted: true, context: 'OpenLDAP', confidence: 0.98 },
   { test: /^\{SHA\}/, name: 'SHA-1 (LDAP)', context: 'OpenLDAP; unsalted, so trivially cracked', confidence: 0.98 },
-  { test: /^\{SMD5\}/, name: 'Salted MD5 (LDAP)', context: 'OpenLDAP', confidence: 0.98 },
+  { test: /^\{SMD5\}/, name: 'Salted MD5 (LDAP)', salted: true, context: 'OpenLDAP', confidence: 0.98 },
   { test: /^\{MD5\}/, name: 'MD5 (LDAP)', context: 'OpenLDAP; unsalted', confidence: 0.98 },
-  { test: /^\{CRYPT\}/, name: 'crypt (LDAP)', context: 'OpenLDAP wrapping a Unix crypt hash', confidence: 0.96 },
+  { test: /^\{CRYPT\}/, name: 'crypt (LDAP)', salted: true, context: 'OpenLDAP wrapping a Unix crypt hash', confidence: 0.96 },
   { test: /^\*[0-9A-F]{40}$/i, name: 'MySQL 4.1+ (SHA-1 twice)', context: 'MySQL user table', confidence: 0.97 },
-  { test: /^0x0100[0-9A-F]{48}$/i, name: 'MSSQL 2005+', context: 'Microsoft SQL Server', confidence: 0.96 },
-  { test: /^0x0200[0-9A-F]{136}$/i, name: 'MSSQL 2012+', context: 'Microsoft SQL Server', confidence: 0.96 },
-  { test: /^\$krb5tgs\$/, name: 'Kerberos TGS-REP', context: 'Kerberoasting output', confidence: 0.99 },
-  { test: /^\$krb5asrep\$/, name: 'Kerberos AS-REP', context: 'AS-REP roasting output', confidence: 0.99 },
+  { test: /^0x0100[0-9A-F]{48}$/i, name: 'MSSQL 2005+', salted: true, context: 'Microsoft SQL Server', confidence: 0.96 },
+  { test: /^0x0200[0-9A-F]{136}$/i, name: 'MSSQL 2012+', salted: true, context: 'Microsoft SQL Server', confidence: 0.96 },
+  { test: /^\$krb5tgs\$/, name: 'Kerberos TGS-REP', salted: true, context: 'Kerberoasting output', confidence: 0.99 },
+  { test: /^\$krb5asrep\$/, name: 'Kerberos AS-REP', salted: true, context: 'AS-REP roasting output', confidence: 0.99 },
   { test: /^\$NT\$[0-9a-f]{32}$/i, name: 'NTLM', context: 'Windows account database', confidence: 0.98 },
-  { test: /^\$DCC2\$/, name: 'Domain Cached Credentials 2', context: 'Cached Windows domain logons', confidence: 0.98 },
-  { test: /^\$ml\$/, name: 'macOS 10.8+ (PBKDF2-SHA512)', context: 'macOS accounts', confidence: 0.97 },
+  { test: /^\$DCC2\$/, name: 'Domain Cached Credentials 2', salted: true, context: 'Cached Windows domain logons', confidence: 0.98 },
+  { test: /^\$ml\$/, name: 'macOS 10.8+ (PBKDF2-SHA512)', salted: true, context: 'macOS accounts', confidence: 0.97 },
   { test: /^\$sha1\$/, name: 'SHA-1 crypt', context: 'NetBSD', confidence: 0.95 },
   { test: /^\$bf\$|^\$2\$/, name: 'bcrypt (early variant)', context: 'Older OpenBSD', confidence: 0.9 },
 ];
@@ -118,8 +126,75 @@ function bareHexMatches(hex: string): HashMatch[] {
       confidence -= 0.06;
     }
 
-    return { name, confidence: Math.min(confidence, 0.75), reason };
+    return {
+      name,
+      confidence: Math.min(confidence, 0.75),
+      reason,
+      // Said explicitly rather than left to inference. A bare digest with no
+      // salt anywhere near it is the case where a lookup service might simply
+      // have the answer, and that is worth knowing before spending a wordlist
+      // on it.
+      salt: {
+        present: false,
+        note: 'Unsalted, so the same password always produces this same hash — it may be in a lookup table.',
+      },
+    };
   });
+}
+
+/**
+ * A digest with its salt beside it, which is how a salted hash is actually
+ * handed to you.
+ *
+ * `5d41402abc4b2a76b9719d911017c592:sodium` is the format every wordlist
+ * cracker reads and every dump writes, and it was falling through every rule
+ * here: the whole string is not 32 hex characters, so the bare-digest path
+ * declined and nothing else claimed it. The person is then told nothing about
+ * a string whose type is completely determined.
+ *
+ * Which side is the salt is not decidable in general — both orders exist, and
+ * hashcat has separate modes for them — so this says which side is the digest,
+ * which is the part it can prove, and leaves the rest as a note.
+ */
+function saltedPairMatches(text: string): HashIdentification | null {
+  const split = /^([^:$*#]+)[:$*#]([^:$*#]{1,64})$/.exec(text);
+  if (!split) return null;
+
+  const [, left = '', right = ''] = split;
+  const isHex = (part: string) => /^[0-9a-fA-F]+$/.test(part);
+  const leftNames = isHex(left) ? BY_HEX_LENGTH[left.length] : undefined;
+  const rightNames = isHex(right) ? BY_HEX_LENGTH[right.length] : undefined;
+
+  // Both sides a known digest length is a different finding — an LM:NTLM pair,
+  // handled above — and not something to guess a salt out of.
+  if (leftNames && rightNames) return null;
+  if (!leftNames && !rightNames) return null;
+
+  const digest = leftNames ? left : right;
+  const salt = leftNames ? right : left;
+  const names = (leftNames ?? rightNames)!;
+  const order = leftNames ? 'hash:salt' : 'salt:hash';
+
+  return {
+    matches: names.slice(0, 4).map((name, index) => ({
+      name: `${name} with a salt`,
+      // A shade below the bare digest of the same length: the separator and a
+      // plausible salt are corroborating evidence, and the ambiguity between
+      // same-length algorithms is unchanged.
+      confidence: Math.max(0.4, 0.72 - index * 0.12),
+      reason: `${digest.length * 4}-bit digest and a ${salt.length}-character salt, written ${order}`,
+      context: 'The layout wordlist crackers read and password dumps write',
+      salt: {
+        present: true,
+        value: salt,
+        note:
+          `The salt is '${salt}'. Which side is the salt is a convention rather than a rule — ` +
+          'both orders are in use - so check against the source before cracking.',
+      },
+    })),
+    summary: `${text.length} characters, a digest and a salt`,
+    oneWay: true,
+  };
 }
 
 export function identifyHash(input: string): HashIdentification | null {
@@ -135,6 +210,9 @@ export function identifyHash(input: string): HashIdentification | null {
         confidence: rule.confidence,
         reason: 'Self-identifying prefix',
         context: rule.context,
+        salt: rule.salted
+          ? { present: true, note: 'The salt is carried inside the hash string.' }
+          : { present: false, note: 'Unsalted, so the same password always produces this same hash.' },
       });
     }
   }
@@ -166,6 +244,9 @@ export function identifyHash(input: string): HashIdentification | null {
       oneWay: true,
     };
   }
+
+  const salted = saltedPairMatches(text);
+  if (salted) return salted;
 
   const hex = /^(0x)?([0-9a-fA-F]+)$/.exec(text);
   if (hex) {
