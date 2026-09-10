@@ -48,6 +48,8 @@ export async function analyse(
 export { flatten, toMarkdown } from './report';
 export { findInLayers, isValidQuery, DEFAULT_FIND_OPTIONS } from './find';
 export { explain } from './explain';
+export { entropyProfile, standoutRegions, bandOf, MIN_FOR_PROFILE } from './entropy';
+export type { EntropyBucket, EntropyBand } from './entropy';
 export type { Explanation } from './explain';
 export type { LayerMatch, FindOptions } from './find';
 export { defang } from './indicators';

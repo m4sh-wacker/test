@@ -5,6 +5,7 @@ import { encodeInput, formatBytes, INPUT_ENCODINGS } from '../../engine';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { IconButton } from '../ui/primitives';
+import { EntropyStrip } from './EntropyStrip';
 import { Pane } from './Pane';
 
 export function InputPane() {
@@ -100,6 +101,8 @@ export function InputPane() {
             </span>
           </div>
         )}
+
+        <EntropyStrip />
 
         <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-1.5">
           <label htmlFor="input-encoding" className="text-micro text-faint">

@@ -107,6 +107,8 @@ export async function hints(input: string, options?: Partial<CtfOptions>): Promi
  */
 export const INPUT_ENCODINGS: string[] = ['Raw bytes', ...ENCODABLE_CHARSET_NAMES];
 
+export { asBytes } from './core/bytes';
+
 export function encodeInput(text: string, encoding: string): string {
   if (encoding === 'Raw bytes' || !INPUT_ENCODINGS.includes(encoding)) return text;
   return bytesToLatin1(encodeCharsetLossy(encoding, text));
@@ -131,6 +133,13 @@ export { toMarkdown, flatten } from './analysis/report';
 export { findInLayers, isValidQuery, DEFAULT_FIND_OPTIONS } from './analysis/find';
 export type { LayerMatch, FindOptions } from './analysis/find';
 export { explain } from './analysis/explain';
+export {
+  entropyProfile,
+  standoutRegions,
+  bandOf,
+  MIN_FOR_PROFILE,
+} from './analysis/entropy';
+export type { EntropyBucket, EntropyBand } from './analysis/entropy';
 export type { Explanation } from './analysis/explain';
 export { defang } from './analysis/indicators';
 export { RULE_COUNT } from './analysis/findings';

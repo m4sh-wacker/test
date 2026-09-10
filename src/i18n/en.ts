@@ -250,6 +250,30 @@ export const t = {
    * The view is called Search and its main control was a field for a CTF flag
    * prefix, which is a niche setting rather than a search. This is the search.
    */
+  /*
+   * The entropy profile.
+   *
+   * Only shown when there are enough bytes for it to mean something. Its words
+   * say "consistent with", never "is": entropy is evidence about a block, and a
+   * short run of unlucky text can look like a cipher.
+   */
+  entropy: {
+    label: 'Shape',
+    hint: 'hover a block',
+    aria: (blocks: number, standout: number) =>
+      standout > 0
+        ? `Entropy profile, ${blocks} blocks, ${standout} dense ${standout === 1 ? 'region' : 'regions'} that stand out`
+        : `Entropy profile, ${blocks} blocks, nothing standing out`,
+    bands: {
+      sparse: 'padding or repetition',
+      text: 'consistent with text',
+      encoded: 'consistent with encoded data',
+      dense: 'consistent with compression or encryption',
+    },
+    standout: (n: number) => `${n} dense ${n === 1 ? 'region' : 'regions'}`,
+    buried: 'Dense inside ordinary content:',
+  },
+
   find: {
     region: 'Find in every layer',
     placeholder: 'Find in every layer — including the ones not decoded yet',
