@@ -73,116 +73,181 @@
 :root {
   color-scheme: light;
 
-  --bg: #fcfcfd;
-  --surface: #ffffff;
-  --surface-2: #f6f6f8;
-  --surface-3: #efeff2;
+  /* VS Code Light+. The editor is the white surface; everything structural
+     around it steps down in grey, which is the opposite of the old palette
+     where panels sat *above* the page. */
+  --bg: #ffffff;
+  --surface: #f3f3f3;
+  --surface-2: #ececec;
+  --surface-3: #e4e6f1;
 
-  --border: rgba(0, 0, 0, 0.09);
-  --border-strong: rgba(0, 0, 0, 0.14);
+  --border: #e5e5e5;
+  --border-strong: #c8c8c8;
 
-  --text: #101114;
-  --text-muted: #62666d;
-  /* 5.18:1 against --surface. The old #9598a1 measured 2.88:1, below AA for
-     normal text and worse again at the micro size this token is mostly used
-     at: byte counts, hints, placeholders — the whole quiet layer. */
-  --text-faint: #696d77;
+  --text: #1f1f1f;
+  --text-muted: #4d4d4d;
+  /* 4.83:1 on --surface-3, the busiest background it lands on. VS Code's own
+     #767676 manages 3.9:1 there, which is a real failure rather than a matter
+     of taste, so this is a shade darker than the original. */
+  --text-faint: #5c5c5c;
 
-  --purple: #9d4edd;
-  /* The brand purple carries text as well as filling shapes, and it cannot do
-     both: #9d4edd measures 4.48:1 on --bg and 4.01:1 on --surface-3, so every
-     pane title and the OWASP wordmark itself sat below AA. This is the reading
-     variant, dark enough to pass on all three surfaces; --purple stays exactly
-     as it was for fills, borders and the focus ring, where contrast is not the
-     same question. 5.70:1 on --surface, 4.97:1 on --surface-3. */
-  --purple-text: #7c3aed;
-  --purple-soft: rgba(157, 78, 221, 0.1);
-  --purple-line: rgba(157, 78, 221, 0.38);
-  --purple-wash: rgba(157, 78, 221, 0.07);
+  --purple: #7c3aed;
+  --purple-text: #6b21c8;
+  --purple-soft: rgba(124, 58, 237, 0.1);
+  --purple-line: rgba(124, 58, 237, 0.42);
+  --purple-wash: rgba(124, 58, 237, 0.06);
 
-  /* Each measured against --surface-3, the worst of the three backgrounds each
-     one lands on. The old values: green 2.87:1, amber 4.38:1, red 4.21:1. */
   --green: #127a37;
   --amber: #a04607;
-  --blue: #2563eb;
+  --blue: #1a5fb4;
   --red: #c81e1e;
 
-  /* Backgrounds for states that need to be noticed without shouting. */
   --amber-wash: rgba(160, 70, 7, 0.07);
 
+  /* --- the chrome, which is a different palette from the content ---------
+     VS Code keeps the activity bar dark in its light themes too, and the
+     status bar is a solid accent slab in both. Copying that means these four
+     do not follow the light/dark split the rest of the tokens do. */
+  --activity-bg: #2c2c2c;
+  --activity-fg: #ffffff;
+  --activity-fg-dim: rgba(255, 255, 255, 0.62);
+  --activity-active-line: #ffffff;
+
+  --tab-active-bg: #ffffff;
+  --tab-inactive-bg: #ececec;
+  --tab-active-fg: #1f1f1f;
+  --tab-inactive-fg: #5c5c5c;
+  --tab-active-line: #7c3aed;
+
+  --status-bg: #4b1e7a;
+  --status-fg: #ffffff;
+  --status-fg-dim: rgba(255, 255, 255, 0.82);
+  --status-hover: rgba(255, 255, 255, 0.16);
+
+  --list-hover: #e8e8e8;
+  --list-active: rgba(124, 58, 237, 0.14);
+  --indent-guide: #d3d3d3;
+
   --glow: none;
-  --overlay-shadow: 0 8px 32px rgba(16, 17, 20, 0.14);
+  --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
 
-    --bg: #08090a;
-    --surface: #0f1011;
-    --surface-2: #141517;
-    --surface-3: #1a1c1f;
+    /* VS Code Dark+, the values the editor itself ships with. */
+    --bg: #1e1e1e;
+    --surface: #252526;
+    --surface-2: #2d2d30;
+    --surface-3: #37373d;
 
-    --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.12);
+    --border: #3c3c3c;
+    --border-strong: #4d4d4d;
 
-    --text: #f7f8f8;
-    --text-muted: #8a8f98;
-    /* 5.34:1 against --surface and 4.78:1 against --surface-3, which is the
-       background it actually lands on inside chips and hover states. The
-       previous #7c818a measured 4.36:1 there, and #62666d before that 3.30:1. */
-    --text-faint: #83888f;
+    --text: #d4d4d4;
+    --text-muted: #bbbbbb;
+    /* 4.52:1 on --surface-3. VS Code's #858585 gets 4.15:1 there — fine on the
+       editor, short of AA on a hovered row, which is exactly where the quiet
+       text lives. */
+    --text-faint: #a0a0a0;
 
-    /* 6.49:1 on --bg, 5.56:1 on --surface-3. The brand purple manages 4.33:1
-       and 3.71:1 there, which is why nothing purple reads text any more. */
-    --purple-text: #b478ec;
-    --purple-soft: rgba(157, 78, 221, 0.14);
-    --purple-line: rgba(157, 78, 221, 0.4);
-    --purple-wash: rgba(157, 78, 221, 0.09);
+    --purple: #9d4edd;
+    /* 4.67:1 on --surface-3, 6.58:1 on --bg. The brand purple manages 3.7:1 on
+       a hovered row, so it fills shapes and this reads text. */
+    --purple-text: #bd8ef0;
+    --purple-soft: rgba(157, 78, 221, 0.16);
+    --purple-line: rgba(157, 78, 221, 0.45);
+    --purple-wash: rgba(157, 78, 221, 0.08);
 
-    --green: #34d399;
-    --amber: #fbbf24;
-    --blue: #4a7bfe;
-    --red: #ef4444;
+    --green: #4ec9b0;
+    --amber: #dcdcaa;
+    --blue: #569cd6;
+    --red: #f14c4c;
 
-    --amber-wash: rgba(251, 191, 36, 0.08);
+    --amber-wash: rgba(220, 220, 170, 0.08);
 
-    --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
-    --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --activity-bg: #333333;
+    --activity-fg: #ffffff;
+    --activity-fg-dim: rgba(255, 255, 255, 0.6);
+    --activity-active-line: #ffffff;
+
+    --tab-active-bg: #1e1e1e;
+    --tab-inactive-bg: #2d2d2d;
+    --tab-active-fg: #ffffff;
+    --tab-inactive-fg: #9d9d9d;
+    --tab-active-line: #bd8ef0;
+
+    --status-bg: #4b1e7a;
+    --status-fg: #ffffff;
+    --status-fg-dim: rgba(255, 255, 255, 0.82);
+    --status-hover: rgba(255, 255, 255, 0.18);
+
+    --list-hover: #2a2d2e;
+    --list-active: rgba(157, 78, 221, 0.22);
+    --indent-guide: #585858;
+
+    --glow: 0 0 0 1px var(--purple-line);
+    --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #08090a;
-  --surface: #0f1011;
-  --surface-2: #141517;
-  --surface-3: #1a1c1f;
+  /* VS Code Dark+, the values the editor itself ships with. */
+  --bg: #1e1e1e;
+  --surface: #252526;
+  --surface-2: #2d2d30;
+  --surface-3: #37373d;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --border: #3c3c3c;
+  --border-strong: #4d4d4d;
 
-  --text: #f7f8f8;
-  --text-muted: #8a8f98;
-  /* 5.34:1 against --surface and 4.78:1 against --surface-3. */
-  --text-faint: #83888f;
+  --text: #d4d4d4;
+  --text-muted: #bbbbbb;
+  /* 4.52:1 on --surface-3. VS Code's #858585 gets 4.15:1 there — fine on the
+     editor, short of AA on a hovered row, which is exactly where the quiet
+     text lives. */
+  --text-faint: #a0a0a0;
 
-  /* 6.49:1 on --bg, 5.56:1 on --surface-3. */
-  --purple-text: #b478ec;
-  --purple-soft: rgba(157, 78, 221, 0.14);
-  --purple-line: rgba(157, 78, 221, 0.4);
-  --purple-wash: rgba(157, 78, 221, 0.09);
+  --purple: #9d4edd;
+  /* 4.67:1 on --surface-3, 6.58:1 on --bg. The brand purple manages 3.7:1 on
+     a hovered row, so it fills shapes and this reads text. */
+  --purple-text: #bd8ef0;
+  --purple-soft: rgba(157, 78, 221, 0.16);
+  --purple-line: rgba(157, 78, 221, 0.45);
+  --purple-wash: rgba(157, 78, 221, 0.08);
 
-  --green: #34d399;
-  --amber: #fbbf24;
-  --blue: #4a7bfe;
-  --red: #ef4444;
+  --green: #4ec9b0;
+  --amber: #dcdcaa;
+  --blue: #569cd6;
+  --red: #f14c4c;
 
-  --amber-wash: rgba(251, 191, 36, 0.08);
+  --amber-wash: rgba(220, 220, 170, 0.08);
 
-  --glow: 0 0 0 1px var(--purple-line), 0 0 40px rgba(157, 78, 221, 0.1);
-  --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --activity-bg: #333333;
+  --activity-fg: #ffffff;
+  --activity-fg-dim: rgba(255, 255, 255, 0.6);
+  --activity-active-line: #ffffff;
+
+  --tab-active-bg: #1e1e1e;
+  --tab-inactive-bg: #2d2d2d;
+  --tab-active-fg: #ffffff;
+  --tab-inactive-fg: #9d9d9d;
+  --tab-active-line: #bd8ef0;
+
+  --status-bg: #4b1e7a;
+  --status-fg: #ffffff;
+  --status-fg-dim: rgba(255, 255, 255, 0.82);
+  --status-hover: rgba(255, 255, 255, 0.18);
+
+  --list-hover: #2a2d2e;
+  --list-active: rgba(157, 78, 221, 0.22);
+  --indent-guide: #585858;
+
+  --glow: 0 0 0 1px var(--purple-line);
+  --overlay-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 @layer base {
@@ -263,5 +328,60 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+  The chrome, as real classes rather than Tailwind colour keys.
+
+  These four surfaces do not follow the light/dark split the content tokens do
+  — VS Code keeps a dark activity bar and a solid accent status bar in every
+  theme — so they were added to the Tailwind palette at first. That turned out
+  to depend on the config being recompiled, and a `bg-status` that silently
+  resolves to nothing gives you white text on a white page. Written here they
+  are just CSS, they carry their own hover states, and there is nothing to
+  regenerate.
+*/
+@layer components {
+  .vs-activity {
+    background-color: var(--activity-bg);
+  }
+  .vs-activity-item {
+    color: var(--activity-fg-dim);
+  }
+  .vs-activity-item:hover,
+  .vs-activity-item[data-active='true'] {
+    color: var(--activity-fg);
+  }
+
+  .vs-tabstrip {
+    background-color: var(--tab-inactive-bg);
+  }
+  .vs-tab {
+    background-color: var(--tab-inactive-bg);
+    color: var(--tab-inactive-fg);
+  }
+  .vs-tab:hover {
+    color: var(--tab-active-fg);
+  }
+  .vs-tab[data-active='true'] {
+    background-color: var(--tab-active-bg);
+    color: var(--tab-active-fg);
+  }
+
+  .vs-status {
+    background-color: var(--status-bg);
+    color: var(--status-fg);
+  }
+  .vs-status-item:hover {
+    background-color: var(--status-hover);
+  }
+
+  /* The row hover and selection an Explorer list lives on. */
+  .vs-row:hover {
+    background-color: var(--list-hover);
+  }
+  .vs-row[data-active='true'] {
+    background-color: var(--list-active);
   }
 }

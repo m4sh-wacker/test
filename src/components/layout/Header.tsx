@@ -1,23 +1,37 @@
-import { Download, Github, Keyboard, Link2, Moon, Save, Search, Sun, Wrench } from 'lucide-react';
+import { Download, Github, Keyboard, Moon, Search, Sun } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
-import { IconButton } from '../ui/primitives';
 import { cx } from '../ui/helpers';
-import { RailToggle } from './Workspace';
+
+/**
+ * The title bar.
+ *
+ * Thirty-five pixels, the height VS Code gives its own, with the three regions
+ * an editor title bar has: identity on the left, the command centre in the
+ * middle, window-level controls on the right.
+ *
+ * It used to be a forty-eight pixel web header with a brand rule above it, a
+ * two-line wordmark, a strapline, a segmented view switch and eight icons. All
+ * of that is real information, but a title bar spending fifty-one pixels of a
+ * laptop screen on identity is fifty-one pixels not spent on the payload. The
+ * view switch moved to the activity bar, where switching views now lives; the
+ * affiliation moved to the download dialog and the README, which is where
+ * someone actually looks for provenance.
+ */
 
 /**
  * The mark is a filled hexagon rather than an outline. OWASP's own identity is
- * built on a solid form, and an outline at 20px reads as a wireframe icon
+ * built on a solid form, and an outline at this size reads as a wireframe icon
  * rather than a logo.
  */
 function Logomark() {
   return (
-    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
+    <svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
       <path d="M16 3 27 9.5v13L16 29 5 22.5v-13z" fill="var(--purple)" />
       <path
         d="M12.6 12.8 9 16l3.6 3.2M19.4 12.8 23 16l-3.6 3.2"
         fill="none"
-        stroke="var(--bg)"
+        stroke="var(--activity-bg)"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -26,164 +40,104 @@ function Logomark() {
   );
 }
 
+function TitleButton({
+  label,
+  onClick,
+  href,
+  children,
+}: {
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  children: React.ReactNode;
+}) {
+  const className =
+    'inline-grid h-[26px] w-[26px] place-items-center rounded-sm text-muted transition-colors duration-100 hover:bg-surface-3 hover:text-text';
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-label={label}
+        title={label}
+        className={className}
+      >
+        {children}
+      </a>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} aria-label={label} title={label} className={className}>
+      {children}
+    </button>
+  );
+}
+
 export function Header() {
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
   const setDialog = useStore((s) => s.setDialog);
-  const view = useStore((s) => s.view);
-  const setView = useStore((s) => s.setView);
-  const flagCount = useStore((s) => s.ctf?.flags.length ?? 0);
+  const focusSearch = useStore((s) => s.focusSearch);
+  const steps = useStore((s) => s.steps);
 
   const isDark =
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   return (
-    <>
-      {/* A brand rule across the top. The one place the accent is unmissable. */}
-      <div
-        aria-hidden="true"
-        className="h-[3px] shrink-0"
-        style={{
-          background:
-            'linear-gradient(90deg, var(--purple) 0%, var(--purple) 42%, var(--purple-line) 78%, transparent 100%)',
-        }}
-      />
+    <header className="flex h-[35px] shrink-0 items-center gap-2 border-b border-line bg-surface-2 px-2">
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Logomark />
+        <span className="truncate font-sans text-[12px] leading-none">
+          <span style={{ color: 'var(--purple-text)' }}>OWASP</span>
+          <span className="ms-1 text-text">DecodeBox</span>
+        </span>
+      </div>
 
-      <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-3 sm:gap-4">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Logomark />
+      {/*
+        The command centre. In VS Code this is the window title turned into a
+        control, and it is the only affordance in the title bar that is worth
+        the width: it says what you are working on and it is the way in to
+        finding something. Ours says how many steps the recipe has, and opens
+        the operation search.
+      */}
+      <button
+        type="button"
+        onClick={focusSearch}
+        className={cx(
+          'mx-auto hidden h-[22px] w-full max-w-[420px] items-center justify-center gap-2',
+          'rounded-[5px] border border-line bg-surface text-[11px] text-faint',
+          'transition-colors duration-100 hover:bg-surface-3 hover:text-muted sm:flex',
+        )}
+      >
+        <Search size={11} aria-hidden="true" />
+        <span className="truncate">
+          {steps.length === 0 ? t.header.commandEmpty : t.header.commandSteps(steps.length)}
+        </span>
+        <kbd className="ms-1 rounded-sm border border-line px-1 font-mono text-[10px] leading-[14px]">
+          {t.operations.shortcut}
+        </kbd>
+      </button>
 
-          {/*
-            Two lines, because the affiliation is a fact about the project and
-            not a subtitle for the tool. Stacked under the name it reads in the
-            same glance; beside it, it read as marketing. The strapline only
-            claims what is true — an OWASP Foundation project, Apache-2.0 — and
-            never "official", which is a status this does not have.
-          */}
-          <span className="flex min-w-0 flex-col justify-center leading-none">
-            <span className="truncate font-brand text-[0.8125rem] font-semibold tracking-tight sm:text-[0.9375rem]">
-              <span style={{ color: 'var(--purple-text)' }}>OWASP</span>
-              <span className="ms-1.5 text-text">DecodeBox</span>
-            </span>
-            <span className="mt-[3px] hidden truncate text-[10px] leading-none text-faint lg:inline">
-              {t.app.affiliation}
-            </span>
-          </span>
-
-          <span
-            aria-hidden="true"
-            className="mx-1 hidden h-5 w-px bg-line xl:block"
-          />
-          <span className="hidden text-micro text-faint xl:inline">{t.app.tagline}</span>
-
-          {/* Beside the name rather than in the icon strip on the right. The
-              offer is "take this away with you", which belongs with the
-              identity of the thing, not among the tools that act on the data. */}
-          <button
-            type="button"
-            onClick={() => setDialog('download')}
-            className="ms-2 hidden items-center gap-1.5 self-center rounded-control px-2 py-1 text-micro text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text sm:inline-flex"
-          >
-            <Download size={12} aria-hidden="true" />
-            {t.header.download}
-          </button>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-0.5">
-          {/*
-            Two modes: transform it, or work out what it is.
-
-            The Report switch also sat here and is out for now — the view, its
-            engine and its tests are all still in the tree and `view` still
-            drives which one renders, so bringing it back is one more button.
-          */}
-          <div className="me-1 flex items-center rounded-control border border-line p-0.5">
-            <button
-              type="button"
-              onClick={() => setView('workspace')}
-              aria-pressed={view === 'workspace'}
-              className={cx(
-                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
-                view === 'workspace' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
-              )}
-            >
-              <Wrench size={12} aria-hidden="true" />
-              <span className="max-sm:hidden">{t.header.workspace}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('ctf')}
-              aria-pressed={view === 'ctf'}
-              title={t.header.ctf}
-              className={cx(
-                'flex items-center gap-1.5 rounded-[6px] px-2 py-1 text-micro font-medium transition-colors',
-                view === 'ctf' ? 'bg-surface-3 text-text' : 'text-faint hover:text-muted',
-              )}
-            >
-              <Search size={12} aria-hidden="true" />
-              <span className="max-sm:hidden">{t.ctf.tab}</span>
-              {flagCount > 0 && (
-                <span
-                  className="rounded-full px-1.5 font-mono text-[10px] text-bg"
-                  style={{ backgroundColor: 'var(--green)' }}
-                >
-                  {flagCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/*
-            Six icons in a row, previously in the order they happened to be
-            written: the pane toggle sat with nothing, and Share, theme and
-            GitHub ran together as one undifferentiated strip.
-            They group into three things a person actually distinguishes —
-            what to do with this recipe, how to arrange the window, where to
-            get help — and the rules make the grouping visible instead of
-            decorative. Each keeps its label for a screen reader and its
-            tooltip for everyone else; at this density, six words across the
-            top would cost more than the icons do.
-          */}
-          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
-
-          <span role="group" aria-label={t.header.recipeActions} className="flex items-center gap-0.5">
-            <IconButton label={t.header.share} onClick={() => setDialog('share')}>
-              <Link2 size={15} aria-hidden="true" />
-            </IconButton>
-            <IconButton label={t.header.library} onClick={() => setDialog('library')}>
-              <Save size={15} aria-hidden="true" />
-            </IconButton>
-          </span>
-
-          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
-
-          <span role="group" aria-label={t.header.viewActions} className="flex items-center gap-0.5">
-            <RailToggle />
-            <IconButton label={t.header.theme} onClick={() => setTheme(isDark ? 'light' : 'dark')}>
-              {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
-            </IconButton>
-          </span>
-
-          <span aria-hidden="true" className="mx-1 h-4 w-px bg-line max-sm:hidden" />
-
-          <span role="group" aria-label={t.header.helpActions} className="flex items-center gap-0.5">
-            <IconButton label={t.header.help} onClick={() => setDialog('help')} className="max-sm:hidden">
-              <Keyboard size={15} aria-hidden="true" />
-            </IconButton>
-            <a
-              href="https://github.com/OWASP/DecodeBox"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label={t.header.github}
-              title={t.header.github}
-              className="inline-grid h-8 w-8 place-items-center rounded-control text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-sm:hidden"
-            >
-              <Github size={15} aria-hidden="true" />
-            </a>
-          </span>
-        </div>
-      </header>
-    </>
+      <div className="ms-auto flex shrink-0 items-center gap-0.5 sm:ms-0">
+        <TitleButton label={t.header.download} onClick={() => setDialog('download')}>
+          <Download size={14} aria-hidden="true" />
+        </TitleButton>
+        <TitleButton
+          label={t.header.theme}
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        >
+          {isDark ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+        </TitleButton>
+        <TitleButton label={t.header.help} onClick={() => setDialog('help')}>
+          <Keyboard size={14} aria-hidden="true" />
+        </TitleButton>
+        <TitleButton label={t.header.github} href="https://github.com/OWASP/DecodeBox">
+          <Github size={14} aria-hidden="true" />
+        </TitleButton>
+      </div>
+    </header>
   );
 }

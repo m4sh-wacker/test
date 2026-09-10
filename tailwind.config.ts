@@ -25,6 +25,7 @@ export default {
         warn: 'var(--amber)',
         link: 'var(--blue)',
         danger: 'var(--red)',
+
       },
       fontFamily: {
         sans: ['Barlow', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
@@ -40,9 +41,12 @@ export default {
         verdict: ['2.125rem', { lineHeight: '1.15', letterSpacing: '-0.03em' }],
       },
       borderRadius: {
-        card: '12px',
-        control: '8px',
-        chip: '6px',
+        /* Flattened for the editor shell. VS Code's chrome has square corners
+           almost everywhere, and 8px radii on every control was the single
+           strongest tell that this was a web page wearing an IDE costume. */
+        card: '3px',
+        control: '3px',
+        chip: '2px',
       },
       boxShadow: {
         // The only two shadows in the system. Depth otherwise comes from borders.

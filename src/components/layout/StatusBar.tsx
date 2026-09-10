@@ -1,19 +1,66 @@
+import { AlertCircle, Check, CircleDot, Layers, Loader2, Timer, Zap } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { formatBytes } from '../../engine';
 import { t } from '../../i18n/en';
+import { cx } from '../ui/helpers';
 
-function Dot({ state }: { state: 'idle' | 'busy' | 'error' }) {
-  const color = {
-    idle: 'var(--text-faint)',
-    busy: 'var(--amber)',
-    error: 'var(--red)',
-  }[state];
+/**
+ * The status bar: 22 pixels of solid accent across the bottom.
+ *
+ * VS Code's is the one piece of chrome that is always a filled colour, and it
+ * is doing a job — it closes the window, and it is the place the eye goes for
+ * numbers it does not want taking up room anywhere else. Ours is OWASP purple
+ * rather than the editor's blue, which is the whole of the re-tint: one slab of
+ * brand, at the edge, where it identifies the tool without colouring the work.
+ *
+ * The items follow the editor's convention: state on the left, measurements on
+ * the right. Everything here changes as you work — a status bar that reprints
+ * the licence on every screen is a footer wearing a costume.
+ */
+
+/** One item. Interactive ones get the hover wash the editor uses. */
+function Item({
+  icon: Icon,
+  children,
+  onClick,
+  label,
+  spin,
+}: {
+  icon?: typeof Zap;
+  children: React.ReactNode;
+  onClick?: () => void;
+  label?: string;
+  spin?: boolean;
+}) {
+  const content = (
+    <>
+      {Icon && (
+        <Icon
+          size={12}
+          aria-hidden="true"
+          className={cx('shrink-0', spin && 'animate-spin')}
+          strokeWidth={2}
+        />
+      )}
+      {children}
+    </>
+  );
+
+  const shared =
+    'flex h-full items-center gap-1 whitespace-nowrap px-2 text-[11px] leading-none';
+
+  if (!onClick) return <span className={shared}>{content}</span>;
+
   return (
-    <span
-      aria-hidden="true"
-      className="inline-block h-1.5 w-1.5 rounded-full"
-      style={{ backgroundColor: color }}
-    />
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={cx(shared, 'vs-status-item transition-colors')}
+    >
+      {content}
+    </button>
   );
 }
 
@@ -23,50 +70,67 @@ export function StatusBar() {
   const analysing = useStore((s) => s.analysing);
   const steps = useStore((s) => s.steps);
   const pausedAt = useStore((s) => s.pausedAt);
+  const autoBake = useStore((s) => s.autoBake);
+  const setAutoBake = useStore((s) => s.setAutoBake);
+  const input = useStore((s) => s.input);
 
-  const state = result?.error ? 'error' : baking || analysing ? 'busy' : 'idle';
-  const label =
-    state === 'busy'
-      ? t.status.working
-      : state === 'error'
-        ? t.status.failed
-        : pausedAt !== null
-          ? t.status.paused
-          : t.status.ready;
+  const busy = baking || analysing;
+  const failed = Boolean(result?.error);
+  const enabled = steps.filter((s) => !s.disabled).length;
 
   return (
-    <footer className="flex h-7 shrink-0 items-center gap-4 border-t border-line bg-surface px-4 text-micro text-faint">
-      <span className="flex items-center gap-1.5">
-        <Dot state={state} />
-        {label}
+    <footer
+      aria-label={t.status.region}
+      className="vs-status flex h-[22px] shrink-0 select-none items-stretch font-sans"
+    >
+      {/* ---- left: what the tool is doing ---- */}
+      <Item
+        icon={busy ? Loader2 : failed ? AlertCircle : pausedAt !== null ? CircleDot : Check}
+        spin={busy}
+      >
+        {busy
+          ? t.status.working
+          : failed
+            ? t.status.failed
+            : pausedAt !== null
+              ? t.status.paused
+              : t.status.ready}
+      </Item>
+
+      <Item icon={AlertCircle}>
+        {failed ? t.status.errors(1) : t.status.errors(0)}
+      </Item>
+
+      <Item icon={Layers}>
+        {t.status.steps}: {enabled}/{steps.length}
+      </Item>
+
+      <Item
+        icon={Zap}
+        onClick={() => setAutoBake(!autoBake)}
+        label={t.recipe.autoBakeHint}
+      >
+        {t.status.autoRun}: {autoBake ? t.status.on : t.status.off}
+      </Item>
+
+      {/* ---- right: the measurements ---- */}
+      <span className="ms-auto flex items-stretch">
+        <Item>
+          {t.status.input}: {formatBytes(new Blob([input]).size)}
+        </Item>
+
+        {result && !result.error && (
+          <Item>
+            {t.status.output}: {formatBytes(result.byteLength)}
+          </Item>
+        )}
+
+        {result && !result.error && (
+          <Item icon={Timer}>{result.durationMs.toFixed(1)} ms</Item>
+        )}
+
+        <Item>UTF-8</Item>
       </span>
-
-      {/* The byte and line counts used to live here, and only here, which put
-          them as far from the pane they describe as the window allows. They are
-          in the pane headers now; repeating them would just be noise. */}
-
-      {steps.length > 0 && (
-        <span className="hidden sm:inline">
-          {t.status.steps}: {steps.filter((s) => !s.disabled).length}/{steps.length}
-        </span>
-      )}
-
-      {result && !result.error && (
-        <span className="hidden md:inline">
-          {t.status.output}: {formatBytes(result.byteLength)}
-        </span>
-      )}
-
-      {/*
-        The affiliation, the licence and the privacy line all used to sit here.
-        They are standing claims rather than status: none of them changes while
-        you work, so a status bar reprints them on every screen for the life of
-        the session and they stop being read. The header carries the identity;
-        the download dialog and the README carry the rest.
-      */}
-      {result && !result.error && (
-        <span className="ms-auto font-mono">{result.durationMs.toFixed(1)} ms</span>
-      )}
     </footer>
   );
 }

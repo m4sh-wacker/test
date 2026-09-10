@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { cx } from '../ui/helpers';
 
 interface Props {
@@ -20,10 +21,17 @@ interface Props {
 }
 
 /**
- * The shared frame every workspace pane sits in: a compact header with a label,
- * optional metadata and actions, over a scrolling body. Keeping the chrome in
- * one place is what stops four panes drifting into four slightly different
- * designs.
+ * The shared frame every editor group sits in: a breadcrumb strip over a
+ * scrolling body.
+ *
+ * This was a nine-pixel-taller header carrying a numbered badge and the pane
+ * name in purple caps. Under an editor tab that already says `input.txt`, the
+ * name was printed twice and the second one was the louder of the two. VS Code
+ * solves this with breadcrumbs — a quiet path under the tab, giving location
+ * rather than repeating identity — so that is what this is now.
+ *
+ * The badge went with it. It existed to say the bytes travel input → recipe →
+ * output, which the three-group layout now says by arrangement.
  */
 export function Pane({ title, step, meta, actions, children, className }: Props) {
   return (
@@ -31,19 +39,21 @@ export function Pane({ title, step, meta, actions, children, className }: Props)
       aria-label={title}
       className={cx('flex min-h-0 min-w-0 flex-1 flex-col bg-bg', className)}
     >
-      <header className="flex h-9 shrink-0 items-center justify-between gap-2 border-b border-line bg-surface px-3">
-        <div className="flex min-w-0 items-center gap-2">
-          {step !== undefined && <StepBadge step={step} />}
-          <h2
-            className="font-mono text-xs2 font-semibold uppercase tracking-[0.08em]"
-            style={{ color: 'var(--purple-text)' }}
-          >
-            {title}
+      <div className="flex h-[24px] shrink-0 items-center justify-between gap-2 px-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="flex items-center gap-1.5 text-[11px] leading-none text-faint">
+            {step !== undefined && (
+              <>
+                <span className="tabular-nums">{step}</span>
+                <ChevronRight size={11} aria-hidden="true" className="opacity-60" />
+              </>
+            )}
+            <span className="truncate">{title}</span>
           </h2>
           {meta}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-0.5">{actions}</div>}
-      </header>
+      </div>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
     </section>
   );

@@ -1,27 +1,33 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { OperationsPane } from '../panes/OperationsPane';
 import { InputPane } from '../panes/InputPane';
 import { OutputPane } from '../panes/OutputPane';
 import { Pipeline } from '../panes/Pipeline';
+import { DetectionSidebar } from '../panes/DetectionSidebar';
+import { ActivityBar } from './ActivityBar';
+import { EditorTabs } from './EditorTabs';
 import { Splitter } from './Splitter';
 import { MobileTabs } from './MobileTabs';
 import { useIsDesktop } from '../../hooks/useMediaQuery';
 import { t } from '../../i18n/en';
 
 /**
- * Three columns: catalogue, recipe, data.
+ * The workbench: activity bar, sidebar, editor groups.
  *
- * The previous layout put the recipe *between* the input and the output, in the
- * order the bytes travel. That reads beautifully and works badly once a recipe
- * has more than about four steps: the recipe was a horizontal strip of fixed
- * height, so it either squeezed the data or scrolled sideways, and the two
- * things you compare most — what went in and what came out — ended up furthest
- * apart with the machinery between them.
+ * The shape is VS Code's, and the reason to borrow it is that the audience
+ * already knows it. A pentester reading a payload has an editor open on the
+ * other monitor; a layout they can already operate costs them nothing to learn,
+ * and the muscle memory — rail to switch panels, tabs to switch buffers, status
+ * bar at the bottom for the numbers — transfers intact.
  *
- * Side by side, the recipe gets a full-height column to grow down into, and
- * input sits directly above output where comparing them is a glance rather than
- * a scroll. Every edge is still draggable, so the split is the reader's to set.
+ * The three surfaces map onto editor groups rather than onto panes with
+ * titles. Left group holds the recipe. Right group is split horizontally, input
+ * over output, which is the arrangement the data itself argues for: what went
+ * in sits directly above what came out.
+ *
+ * Every split is draggable. The illusion is not worth anything if the layout is
+ * fixed — resizable groups are half of what makes an editor an editor.
  */
 export function Workspace() {
   const paneWidths = useStore((s) => s.paneWidths);
@@ -30,14 +36,18 @@ export function Workspace() {
   const setPaneHeight = useStore((s) => s.setPaneHeight);
   const mobilePane = useStore((s) => s.mobilePane);
   const maximised = useStore((s) => s.outputMaximised);
-  const railOpen = useStore((s) => s.railOpen);
-  const setRailOpen = useStore((s) => s.setRailOpen);
+  const setOutputMaximised = useStore((s) => s.setOutputMaximised);
+  const sidebar = useStore((s) => s.sidebar);
+  const sidebarOpen = useStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useStore((s) => s.setSidebarOpen);
+  const steps = useStore((s) => s.steps);
   const isDesktop = useIsDesktop();
 
   if (!isDesktop) {
     return (
-      /* One surface at a time, from a bottom tab bar. Three columns is a
-         desktop shape; on a phone it would be three columns of nothing. */
+      /* One surface at a time, from a bottom tab bar. An activity bar plus two
+         sidebars plus three editor groups is a desktop shape; on a phone it
+         would be six columns of nothing. */
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col">
           {mobilePane === 'operations' && <OperationsPane />}
@@ -52,93 +62,144 @@ export function Workspace() {
 
   return (
     <div className="flex min-h-0 flex-1">
-      {/* Column 1 — the catalogue. */}
-      {railOpen ? (
+      <ActivityBar />
+
+      {sidebarOpen && (
         <>
-          <div style={{ width: paneWidths.operations }} className="flex min-h-0 shrink-0">
-            <OperationsPane />
+          <div
+            style={{ width: paneWidths.operations }}
+            className="flex min-h-0 shrink-0 flex-col bg-surface"
+          >
+            {sidebar === 'operations' ? <OperationsPane /> : <DetectionSidebar />}
           </div>
           <Splitter
             value={paneWidths.operations}
-            min={180}
-            max={420}
+            min={170}
+            max={480}
             label={t.layout.resizeOperations}
             onChange={(w) => setPaneWidth('operations', w)}
           />
         </>
-      ) : (
-        <div className="flex shrink-0 flex-col border-e border-line bg-surface">
-          <button
-            type="button"
-            onClick={() => setRailOpen(true)}
-            aria-label={t.layout.showOperations}
-            title={t.layout.showOperations}
-            className="grid h-8 w-8 place-items-center text-muted transition-colors hover:bg-surface-3 hover:text-text"
-          >
-            <PanelLeftOpen size={15} aria-hidden="true" />
-          </button>
-        </div>
       )}
 
-      {/* Column 2 — the recipe, with room to grow downward. */}
-      {!maximised && (
-        <>
-          <div style={{ width: paneWidths.recipe }} className="flex min-h-0 shrink-0">
-            <Pipeline />
-          </div>
-          <Splitter
-            value={paneWidths.recipe}
-            min={220}
-            max={640}
-            label={t.layout.resizeRecipe}
-            onChange={(w) => setPaneWidth('recipe', w)}
-          />
-        </>
-      )}
-
-      {/* Column 3 — the data, in over out. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      {/* The editor area. */}
+      <div className="flex min-h-0 min-w-0 flex-1">
+        {/* Group 1 — the recipe. */}
         {!maximised && (
           <>
             <div
-              className="flex min-h-0 overflow-hidden"
-              style={{ flex: `0 0 ${paneHeights.input}px` }}
+              style={{ width: paneWidths.recipe }}
+              className="flex min-h-0 shrink-0 flex-col bg-bg"
             >
-              <InputPane />
+              <EditorTabs
+                tabs={[
+                  {
+                    id: 'recipe',
+                    name: 'recipe.yaml',
+                    kind: 'yaml',
+                    // A recipe with steps in it is a modified buffer, and the
+                    // dot is how an editor says so.
+                    dirty: steps.length > 0,
+                  },
+                ]}
+                active="recipe"
+                onSelect={() => undefined}
+              />
+              <Pipeline />
             </div>
             <Splitter
-              axis="vertical"
-              value={paneHeights.input}
-              min={80}
-              max={720}
-              label={t.layout.resizeInput}
-              onChange={(height) => setPaneHeight('input', height)}
+              value={paneWidths.recipe}
+              min={220}
+              max={680}
+              label={t.layout.resizeRecipe}
+              onChange={(w) => setPaneWidth('recipe', w)}
             />
           </>
         )}
-        <div className="flex min-h-0 flex-1 basis-0">
-          <OutputPane />
+
+        {/* Group 2 — the data, split horizontally: in over out. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-bg">
+          {!maximised && (
+            <>
+              <div
+                className="flex min-h-0 flex-col overflow-hidden"
+                style={{ flex: `0 0 ${paneHeights.input}px` }}
+              >
+                <EditorTabs
+                  tabs={[{ id: 'input', name: 'input.txt', kind: 'txt' }]}
+                  active="input"
+                  onSelect={() => undefined}
+                />
+                <InputPane />
+              </div>
+              <Splitter
+                axis="vertical"
+                value={paneHeights.input}
+                min={90}
+                max={760}
+                label={t.layout.resizeInput}
+                onChange={(height) => setPaneHeight('input', height)}
+              />
+            </>
+          )}
+
+          <div className="flex min-h-0 flex-1 basis-0 flex-col">
+            <EditorTabs
+              tabs={[{ id: 'output', name: 'output.hex', kind: 'hex' }]}
+              active="output"
+              onSelect={() => undefined}
+              actions={
+                <button
+                  type="button"
+                  onClick={() => setOutputMaximised(!maximised)}
+                  aria-label={maximised ? t.layout.restore : t.layout.maximiseOutput}
+                  title={maximised ? t.layout.restore : t.layout.maximiseOutput}
+                  aria-pressed={maximised}
+                  className="grid h-6 w-6 place-items-center rounded-sm text-faint transition-colors hover:bg-surface-3 hover:text-text"
+                >
+                  {maximised ? (
+                    <Minimize2 size={13} aria-hidden="true" />
+                  ) : (
+                    <Maximize2 size={13} aria-hidden="true" />
+                  )}
+                </button>
+              }
+            />
+            <OutputPane />
+          </div>
         </div>
       </div>
+
+      {!sidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label={t.layout.showOperations}
+          title={t.layout.showOperations}
+          className="sr-only"
+        >
+          {t.layout.showOperations}
+        </button>
+      )}
     </div>
   );
 }
 
-/** Lives here because only the workspace has an operations rail to collapse. */
+/** Lives here because only the workspace has a sidebar to collapse. */
 export function RailToggle() {
-  const railOpen = useStore((s) => s.railOpen);
-  const setRailOpen = useStore((s) => s.setRailOpen);
+  const sidebarOpen = useStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useStore((s) => s.setSidebarOpen);
 
   return (
     <button
       type="button"
-      onClick={() => setRailOpen(!railOpen)}
-      aria-label={railOpen ? t.layout.hideOperations : t.layout.showOperations}
-      title={railOpen ? t.layout.hideOperations : t.layout.showOperations}
-      aria-pressed={!railOpen}
-      className="inline-grid h-8 w-8 place-items-center rounded-control text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-md:hidden"
+      onClick={() => setSidebarOpen(!sidebarOpen)}
+      aria-label={sidebarOpen ? t.layout.hideOperations : t.layout.showOperations}
+      title={sidebarOpen ? t.layout.hideOperations : t.layout.showOperations}
+      aria-pressed={!sidebarOpen}
+      className="inline-grid h-7 w-7 place-items-center rounded-sm text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-md:hidden"
     >
-      {railOpen ? (
+      {sidebarOpen ? (
         <PanelLeftClose size={15} aria-hidden="true" />
       ) : (
         <PanelLeftOpen size={15} aria-hidden="true" />

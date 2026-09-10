@@ -1,10 +1,9 @@
 import { Fragment, useMemo, useState } from 'react';
-import { Clock, GripVertical, Search, Star, X } from 'lucide-react';
+import { ChevronRight, FileCode2, Folder, FolderOpen, Search, Star, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { CATEGORY_ORDER, type OperationDef } from '../../engine';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
-import { Pane } from './Pane';
 
 const FAVOURITES = 'Favourites';
 const RECENT = 'Recent';
@@ -59,22 +58,35 @@ function Row({ op, query }: { op: OperationDef; query: string }) {
           event.dataTransfer.setData('application/x-decodebox-op', op.id);
           event.dataTransfer.effectAllowed = 'copy';
         }}
-        className="group flex cursor-grab items-center gap-1 pe-1.5 transition-colors duration-100 ease-smooth hover:bg-surface-2 active:cursor-grabbing"
+        className="vs-row group relative flex cursor-pointer items-center gap-1 pe-1 ps-[22px]"
         title={op.description}
       >
-        <GripVertical
-          size={11}
+        {/*
+          The indent guide. A one-pixel rule down the nesting level is how a
+          file tree stays legible past the first level, and it is most of what
+          makes an indented list read as a tree rather than as ragged text.
+        */}
+        <span
           aria-hidden="true"
-          className="ms-1 shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
+          className="pointer-events-none absolute inset-y-0 start-[11px] w-px"
+          style={{ backgroundColor: 'var(--indent-guide)' }}
         />
+
+        <FileCode2
+          size={13}
+          aria-hidden="true"
+          className="shrink-0"
+          style={{ color: op.isFlowControl ? 'var(--amber)' : 'var(--blue)' }}
+        />
+
         <button
           type="button"
           onClick={() => addStep(op.id)}
-          className="flex min-w-0 flex-1 items-baseline gap-2 py-[5px] text-start"
+          className="flex min-w-0 flex-1 items-baseline gap-2 py-[3px] text-start"
         >
           <span
             className={cx(
-              'truncate text-xs2 group-hover:text-text',
+              'truncate text-[13px] leading-[18px] group-hover:text-text',
               op.isFlowControl ? 'italic text-faint' : 'text-muted',
             )}
           >
@@ -92,8 +104,8 @@ function Row({ op, query }: { op: OperationDef; query: string }) {
           aria-pressed={starred}
           onClick={() => toggleFavourite(op.id)}
           className={cx(
-            'shrink-0 rounded p-1 transition-opacity',
-            starred ? 'opacity-100' : 'opacity-0 group-hover:opacity-60 hover:!opacity-100',
+            'shrink-0 rounded-sm p-0.5 transition-opacity',
+            starred ? 'opacity-100' : 'opacity-0 group-hover:opacity-70 hover:!opacity-100',
           )}
         >
           <Star
@@ -109,28 +121,46 @@ function Row({ op, query }: { op: OperationDef; query: string }) {
 }
 
 /**
- * A category heading, not a control.
+ * A folder row.
  *
- * These used to be accordions, closed by default, so reaching an operation cost
- * a click to open the right one and a guess about which one that was. With five
- * hundred operations behind sixteen closed doors, the catalogue was a menu of
- * headings rather than a list of tools.
- *
- * Flat and scrolling, the headings become signposts you pass rather than gates
- * you open, and the search — which is how anyone with a specific operation in
- * mind actually finds it — is unobstructed.
+ * These were accordions once, closed by default, which put five hundred
+ * operations behind sixteen doors and made reaching one cost a click plus a
+ * guess. They are folders now — the Explorer idiom — but they open by default
+ * and searching flattens them, so the tree is a way of grouping rather than a
+ * way of hiding.
  */
-function CategoryHeading({ name, count }: { name: string; count: number }) {
+function CategoryFolder({
+  name,
+  count,
+  open,
+  onToggle,
+}: {
+  name: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <h3
-      className="sticky top-0 z-10 flex items-center gap-2 border-y border-line bg-surface-2 px-2 py-1"
-      style={{ boxShadow: 'inset 2px 0 0 0 var(--purple-line)' }}
-    >
-      {name === RECENT && <Clock size={9} aria-hidden="true" className="shrink-0 text-faint" />}
-      <span className="flex-1 truncate font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
-        {name}
-      </span>
-      <span className="font-mono text-[10px] tabular-nums text-faint">{count}</span>
+    <h3>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="vs-row flex w-full items-center gap-1 py-[3px] pe-1.5 ps-0.5 text-start"
+      >
+        <ChevronRight
+          size={14}
+          aria-hidden="true"
+          className={cx('shrink-0 text-muted transition-transform duration-100', open && 'rotate-90')}
+        />
+        {open ? (
+          <FolderOpen size={13} aria-hidden="true" className="shrink-0" style={{ color: 'var(--amber)' }} />
+        ) : (
+          <Folder size={13} aria-hidden="true" className="shrink-0" style={{ color: 'var(--amber)' }} />
+        )}
+        <span className="flex-1 truncate text-[13px] leading-[18px] text-muted">{name}</span>
+        <span className="font-mono text-[10px] tabular-nums text-faint">{count}</span>
+      </button>
     </h3>
   );
 }
@@ -141,6 +171,12 @@ export function OperationsPane() {
   const recent = useStore((s) => s.recent);
   const addStep = useStore((s) => s.addStep);
   const [query, setQuery] = useState('');
+  /*
+   * Folders that the reader has closed. Empty by default: the tree opens
+   * showing its contents, and closing one is a deliberate act of tidying
+   * rather than the state you have to dig out of on every visit.
+   */
+  const [closed, setClosed] = useState<string[]>([]);
   const grouped = useMemo(() => {
     const q = query.trim();
     const matched = q
@@ -195,20 +231,21 @@ export function OperationsPane() {
   const searching = query.trim().length > 0;
 
   return (
-    <Pane
-      title={t.operations.title}
-      meta={
-        <span className="font-mono text-micro tabular-nums text-faint">
+    <section aria-label={t.operations.title} className="flex min-h-0 flex-1 flex-col bg-surface">
+      {/* VS Code's sidebar title: quiet, uppercase, no border, no chrome. */}
+      <h2 className="flex h-9 shrink-0 items-center gap-2 px-4 text-[11px] font-normal uppercase tracking-[0.08em] text-muted">
+        <span className="flex-1 truncate">{t.operations.title}</span>
+        <span className="font-mono text-[10px] tabular-nums text-faint">
           {searching ? t.operations.matches(total, operations.length) : operations.length}
         </span>
-      }
-    >
-      <div className="shrink-0 border-b border-line bg-surface p-2">
+      </h2>
+
+      <div className="shrink-0 px-2 pb-1.5">
         <div className="relative">
           <Search
             size={12}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 start-2.5 my-auto text-faint"
+            className="pointer-events-none absolute inset-y-0 start-2 my-auto text-faint"
           />
           <input
             type="search"
@@ -224,28 +261,23 @@ export function OperationsPane() {
             aria-label={t.operations.search}
             aria-describedby="operation-search-hint"
             spellCheck={false}
-            className="w-full rounded-control border border-line bg-surface-2 py-1.5 pe-14 ps-7 text-micro outline-none transition-colors duration-150 ease-smooth placeholder:text-faint focus:border-purple-line"
+            className="w-full rounded-sm border border-line bg-surface-2 py-1 pe-14 ps-6 text-[12px] outline-none transition-colors duration-150 placeholder:text-faint focus:border-purple-line"
           />
 
-          {/*
-            The shortcut is written where the thing it opens is, because a
-            shortcut nobody is told about is a shortcut nobody uses. It gives
-            way to a clear button once there is something to clear.
-          */}
           {query ? (
             <button
               type="button"
               onClick={() => setQuery('')}
               aria-label={t.operations.clear}
               title={t.operations.clear}
-              className="absolute inset-y-0 end-1.5 my-auto grid h-6 w-6 place-items-center rounded text-faint transition-colors hover:bg-surface-3 hover:text-text"
+              className="absolute inset-y-0 end-1 my-auto grid h-5 w-5 place-items-center rounded-sm text-faint transition-colors hover:bg-surface-3 hover:text-text"
             >
               <X size={12} aria-hidden="true" />
             </button>
           ) : (
             <kbd
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 end-2 my-auto flex h-[18px] items-center rounded border border-line px-1.5 font-mono text-[10px] text-faint"
+              className="pointer-events-none absolute inset-y-0 end-1.5 my-auto flex h-[16px] items-center rounded-sm border border-line px-1 font-mono text-[10px] text-faint"
             >
               {t.operations.shortcut}
             </kbd>
@@ -257,7 +289,7 @@ export function OperationsPane() {
         </p>
 
         {topMatch && (
-          <p className="mt-1.5 truncate text-[10px] text-faint">
+          <p className="mt-1 truncate text-[10px] text-faint">
             {t.operations.enterAdds(topMatch.name)}
           </p>
         )}
@@ -269,26 +301,36 @@ export function OperationsPane() {
           // slow connection this list is briefly empty for a reason that has
           // nothing to do with the search — and saying 'nothing matches' then
           // would be a lie about the tool rather than about the query.
-          <p className="px-3 py-6 text-center text-micro text-faint">
+          <p className="px-4 py-6 text-center text-[12px] text-faint">
             {operations.length === 0 ? t.operations.loading : t.operations.noResults}
           </p>
         ) : (
-          grouped.map(([name, ops]) => (
-            <Fragment key={name}>
-              <CategoryHeading name={name} count={ops.length} />
-              <ul>
-                {ops.map((op) => (
-                  <Row key={op.id} op={op} query={searching ? query.trim() : ''} />
-                ))}
-              </ul>
-            </Fragment>
-          ))
+          grouped.map(([name, ops]) => {
+            // Searching flattens the tree: when the names are the answer,
+            // folders are just something else to open.
+            const open = searching || !closed.includes(name);
+            return (
+              <Fragment key={name}>
+                <CategoryFolder
+                  name={name}
+                  count={ops.length}
+                  open={open}
+                  onToggle={() =>
+                    setClosed((c) => (c.includes(name) ? c.filter((n) => n !== name) : [...c, name]))
+                  }
+                />
+                {open && (
+                  <ul>
+                    {ops.map((op) => (
+                      <Row key={op.id} op={op} query={searching ? query.trim() : ''} />
+                    ))}
+                  </ul>
+                )}
+              </Fragment>
+            );
+          })
         )}
       </div>
-
-      <p className="shrink-0 border-t border-line px-3 py-1.5 text-[10px] text-faint">
-        {t.operations.hint}
-      </p>
-    </Pane>
+    </section>
   );
 }

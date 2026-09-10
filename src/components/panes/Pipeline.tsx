@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
+  ChevronRight,
   Circle,
   Eye,
   EyeOff,
@@ -15,7 +16,6 @@ import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { ArgControl } from './ArgControls';
-import { StepBadge } from './Pane';
 import { dropTarget } from './reorder';
 
 /**
@@ -552,15 +552,13 @@ export function Pipeline() {
         dropping && 'bg-purple-wash',
       )}
     >
-      <header className="flex h-8 shrink-0 items-center gap-2 border-b border-line bg-surface px-2">
-        <StepBadge step={2} />
-        <h2
-          className="font-mono text-xs2 font-semibold uppercase tracking-[0.08em]"
-          style={{ color: 'var(--purple-text)' }}
-        >
-          {t.recipe.title}
-        </h2>
-        <span className="font-mono text-micro tabular-nums text-faint">{steps.length}</span>
+      {/* Breadcrumbs, matching the other groups: the tab above already says
+          recipe.yaml, so this gives position rather than repeating the name. */}
+      <header className="flex h-[24px] shrink-0 items-center gap-1.5 px-2 text-[11px] leading-none text-faint">
+        <span className="tabular-nums">2</span>
+        <ChevronRight size={11} aria-hidden="true" className="opacity-60" />
+        <span>{t.recipe.title}</span>
+        <span className="font-mono tabular-nums">{steps.length}</span>
         {paused && (
           <span className="font-mono text-micro" style={{ color: 'var(--amber)' }}>
             {t.recipe.pausedAt(pausedAt + 1)}

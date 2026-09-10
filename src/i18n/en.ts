@@ -23,6 +23,8 @@ export const t = {
   },
 
   header: {
+    commandEmpty: 'DecodeBox — search operations',
+    commandSteps: (n: number) => `recipe.yaml — ${n} step${n === 1 ? '' : 's'}`,
     download: 'Download DecodeBox',
     theme: 'Switch theme',
     github: 'Source on GitHub',
@@ -36,9 +38,36 @@ export const t = {
     ctf: 'Search — what to try next',
   },
 
+  detectionTree: {
+    title: 'Detection',
+    layers: 'Decode layers',
+    findings: 'Findings',
+    indicators: 'Indicators',
+    noFindings: 'Nothing flagged.',
+    noIndicators: 'No addresses, hosts or hashes found.',
+    empty: 'Paste something into input.txt and DecodeBox will map what is inside it.',
+    working: 'Analysing…',
+    truncated: 'The tree hit a bound and is not exhaustive.',
+    expand: (name: string) => `Expand ${name}`,
+    collapse: (name: string) => `Collapse ${name}`,
+  },
+
+  activity: {
+    title: 'Views',
+    operations: 'Operations (the catalogue)',
+    search: 'Search operations',
+    detection: 'What was detected',
+    recipes: 'Saved recipes',
+    ctf: 'CTF workspace',
+    share: 'Share this workspace as a link',
+    help: 'Keyboard shortcuts and help',
+  },
+
   layout: {
     panes: 'Workspace panes',
     skipToInput: 'Skip to input',
+    maximiseOutput: 'Maximise the output group',
+    restore: 'Restore the layout',
     resizeOperations: 'Resize the operations pane',
     resizeRecipe: 'Resize the recipe pane',
     resizeInput: 'Resize the input pane — drag, or use the arrow keys',
@@ -348,6 +377,11 @@ export const t = {
   },
 
   status: {
+    region: 'Status',
+    autoRun: 'Auto-run',
+    on: 'ON',
+    off: 'OFF',
+    errors: (n: number) => `${n} error${n === 1 ? '' : 's'}`,
     ready: 'Ready',
     working: 'Working',
     failed: 'Failed',

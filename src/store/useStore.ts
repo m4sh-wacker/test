@@ -31,6 +31,8 @@ import {
 } from '../lib/recipes';
 
 type Theme = 'light' | 'dark' | 'system';
+export type SidebarView = 'operations' | 'detection';
+
 export type MobilePane = 'operations' | 'recipe' | 'input' | 'output';
 export type View = 'workspace' | 'ctf';
 export type Dialog = 'help' | 'share' | 'library' | 'download' | null;
@@ -107,6 +109,9 @@ interface State {
   outputMaximised: boolean;
   view: View;
   railOpen: boolean;
+  /** Which activity-bar view the sidebar is showing. */
+  sidebar: SidebarView;
+  sidebarOpen: boolean;
   recipeView: 'visual' | 'text';
   theme: Theme;
   dialog: Dialog;
@@ -159,6 +164,8 @@ interface State {
   setMobilePane: (pane: MobilePane) => void;
   setOutputMaximised: (maximised: boolean) => void;
   setView: (view: View) => void;
+  setSidebar: (view: SidebarView) => void;
+  setSidebarOpen: (open: boolean) => void;
   setRailOpen: (open: boolean) => void;
   setRecipeView: (view: 'visual' | 'text') => void;
   setTheme: (theme: Theme) => void;
@@ -281,6 +288,8 @@ export const useStore = create<State>((set, get) => ({
   outputMaximised: false,
   view: 'workspace',
   railOpen: read('decodebox-rail', true),
+  sidebar: read('decodebox-sidebar', 'operations' as SidebarView),
+  sidebarOpen: read('decodebox-sidebar-open', true),
   recipeView: 'visual',
   theme: readTheme(),
   dialog: null,
@@ -681,6 +690,16 @@ export const useStore = create<State>((set, get) => ({
   setRailOpen: (open) => {
     set({ railOpen: open });
     write('decodebox-rail', open);
+  },
+
+  setSidebar: (view) => {
+    set({ sidebar: view });
+    write('decodebox-sidebar', view);
+  },
+
+  setSidebarOpen: (open) => {
+    set({ sidebarOpen: open });
+    write('decodebox-sidebar-open', open);
   },
   setRecipeView: (view) => set({ recipeView: view }),
 
