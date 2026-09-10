@@ -10,22 +10,18 @@ import { useIsDesktop } from '../../hooks/useMediaQuery';
 import { t } from '../../i18n/en';
 
 /**
- * Two columns, not four panes.
+ * Three columns: catalogue, recipe, data.
  *
- * Tools in this space conventionally put operations, recipe, input and output
- * side by side, which makes the recipe a column that happens to sit near the
- * data rather than something the data passes through. Here the right-hand
- * column is the flow itself — input, then the pipeline, then output, top to
- * bottom in the order the bytes travel — and the operations catalogue is a
- * single rail beside it that can be closed when it is not needed.
+ * The previous layout put the recipe *between* the input and the output, in the
+ * order the bytes travel. That reads beautifully and works badly once a recipe
+ * has more than about four steps: the recipe was a horizontal strip of fixed
+ * height, so it either squeezed the data or scrolled sideways, and the two
+ * things you compare most — what went in and what came out — ended up furthest
+ * apart with the machinery between them.
  *
- * The result reads as one workspace rather than four, and the pipeline ends up
- * drawn in the same language as the detected layer chain, which is the point.
- *
- * Exactly one of the two layouts is mounted. Rendering both and hiding one with
- * `md:hidden` hides pixels and nothing else: every pane existed twice, the store
- * carried two of every subscription, and a screen reader announced two inputs
- * and two outputs to somebody on a desktop.
+ * Side by side, the recipe gets a full-height column to grow down into, and
+ * input sits directly above output where comparing them is a glance rather than
+ * a scroll. Every edge is still draggable, so the split is the reader's to set.
  */
 export function Workspace() {
   const paneWidths = useStore((s) => s.paneWidths);
@@ -40,17 +36,12 @@ export function Workspace() {
 
   if (!isDesktop) {
     return (
-      /* One surface at a time, chosen from a bottom tab bar. The wrapper
-         carries flex-1, because a pane sizes itself to its container. */
+      /* One surface at a time, from a bottom tab bar. Three columns is a
+         desktop shape; on a phone it would be three columns of nothing. */
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 flex-1 flex-col">
           {mobilePane === 'operations' && <OperationsPane />}
-          {mobilePane === 'recipe' && (
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-              <Pipeline />
-              <p className="px-3 py-6 text-center text-micro text-faint">{t.recipe.mobileHint}</p>
-            </div>
-          )}
+          {mobilePane === 'recipe' && <Pipeline />}
           {mobilePane === 'input' && <InputPane />}
           {mobilePane === 'output' && <OutputPane />}
         </div>
@@ -60,96 +51,76 @@ export function Workspace() {
   }
 
   return (
-    <>
-      <div className="flex min-h-0 flex-1">
-        {railOpen ? (
-          <>
-            <div style={{ width: paneWidths.operations }} className="flex min-h-0 shrink-0">
-              <OperationsPane />
-            </div>
-            <Splitter
-              value={paneWidths.operations}
-              min={200}
-              max={420}
-              label={t.layout.resizeOperations}
-              onChange={(w) => setPaneWidth('operations', w)}
-            />
-          </>
-        ) : (
-          <div className="flex shrink-0 flex-col border-e border-line bg-surface">
-            <button
-              type="button"
-              onClick={() => setRailOpen(true)}
-              aria-label={t.layout.showOperations}
-              title={t.layout.showOperations}
-              className="grid h-9 w-9 place-items-center text-muted transition-colors hover:bg-surface-3 hover:text-text"
-            >
-              <PanelLeftOpen size={15} aria-hidden="true" />
-            </button>
+    <div className="flex min-h-0 flex-1">
+      {/* Column 1 — the catalogue. */}
+      {railOpen ? (
+        <>
+          <div style={{ width: paneWidths.operations }} className="flex min-h-0 shrink-0">
+            <OperationsPane />
           </div>
-        )}
-
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          {/*
-            Every edge is the user's to move.
-
-            The input used to be capped at 38% of the window and the recipe took
-            whatever it took. Those are reasonable defaults and they are still
-            the defaults, but they were also the only option: someone working on
-            a 200-line payload could not give it more room, and someone with a
-            twelve-step recipe could not see it all at once. Both are now
-            dragged, both are remembered, and both move from the keyboard.
-          */}
-          {!maximised && (
-            <>
-              {/*
-                Sized by flex-basis, not by height.
-
-                These wrappers are flex items in a column and flex containers in
-                their own right. With `flex-basis: auto` the used main size comes
-                from the content, and an inline `height` — even `!important` —
-                was applied and then ignored: 640px of inline style measured
-                200px on screen. `flex: 0 0 <n>px` states the size in the terms
-                the algorithm actually resolves.
-              */}
-              <div
-                className="flex min-h-0 overflow-hidden"
-                style={{ flex: `0 0 ${paneHeights.input}px` }}
-              >
-                <InputPane />
-              </div>
-              <Splitter
-                axis="vertical"
-                value={paneHeights.input}
-                min={80}
-                max={640}
-                label={t.layout.resizeInput}
-                onChange={(height) => setPaneHeight('input', height)}
-              />
-            </>
-          )}
-
-          <div
-            className="flex min-h-0 overflow-y-auto"
-            style={{ flex: `0 0 ${paneHeights.recipe}px` }}
+          <Splitter
+            value={paneWidths.operations}
+            min={180}
+            max={420}
+            label={t.layout.resizeOperations}
+            onChange={(w) => setPaneWidth('operations', w)}
+          />
+        </>
+      ) : (
+        <div className="flex shrink-0 flex-col border-e border-line bg-surface">
+          <button
+            type="button"
+            onClick={() => setRailOpen(true)}
+            aria-label={t.layout.showOperations}
+            title={t.layout.showOperations}
+            className="grid h-8 w-8 place-items-center text-muted transition-colors hover:bg-surface-3 hover:text-text"
           >
+            <PanelLeftOpen size={15} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {/* Column 2 — the recipe, with room to grow downward. */}
+      {!maximised && (
+        <>
+          <div style={{ width: paneWidths.recipe }} className="flex min-h-0 shrink-0">
             <Pipeline />
           </div>
           <Splitter
-            axis="vertical"
-            value={paneHeights.recipe}
-            min={64}
-            max={520}
-            label={t.layout.resizeRecipeHeight}
-            onChange={(height) => setPaneHeight('recipe', height)}
+            value={paneWidths.recipe}
+            min={220}
+            max={640}
+            label={t.layout.resizeRecipe}
+            onChange={(w) => setPaneWidth('recipe', w)}
           />
+        </>
+      )}
 
-          <div className="flex min-h-0 flex-1 basis-0">
-            <OutputPane />
-          </div>
+      {/* Column 3 — the data, in over out. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {!maximised && (
+          <>
+            <div
+              className="flex min-h-0 overflow-hidden"
+              style={{ flex: `0 0 ${paneHeights.input}px` }}
+            >
+              <InputPane />
+            </div>
+            <Splitter
+              axis="vertical"
+              value={paneHeights.input}
+              min={80}
+              max={720}
+              label={t.layout.resizeInput}
+              onChange={(height) => setPaneHeight('input', height)}
+            />
+          </>
+        )}
+        <div className="flex min-h-0 flex-1 basis-0">
+          <OutputPane />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -108,6 +108,8 @@ export async function hints(input: string, options?: Partial<CtfOptions>): Promi
 export const INPUT_ENCODINGS: string[] = ['Raw bytes', ...ENCODABLE_CHARSET_NAMES];
 
 export { asBytes } from './core/bytes';
+// Display, not transformation: how the output pane reads a result.
+export { hexdumpOf, toBase64 } from './core/views';
 
 export function encodeInput(text: string, encoding: string): string {
   if (encoding === 'Raw bytes' || !INPUT_ENCODINGS.includes(encoding)) return text;

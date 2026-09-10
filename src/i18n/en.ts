@@ -115,6 +115,9 @@ export const t = {
 
   output: {
     title: 'Output',
+    views: 'How to read the output',
+    viewNames: { raw: 'Raw', hexdump: 'Hexdump', base64: 'Base64' },
+    viewNote: 'a view, not a recipe step',
     fromDetection: 'auto-decoded',
     fromDetectionHint:
       'This is what detection unwrapped, not the recipe. Use as recipe to make it editable.',

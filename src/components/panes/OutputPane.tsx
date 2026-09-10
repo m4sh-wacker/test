@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowUp, Check, Copy, Download, Maximize2, Minimize2, WrapText } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { fileSignatureOf, formatBytes, imageMimeOf, renderText } from '../../engine';
+import { hexdumpOf, toBase64 } from '../../engine';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { IconButton } from '../ui/primitives';
@@ -58,6 +59,19 @@ export function OutputPane() {
       : '';
   const json = !isImage && isJson(shown);
   const pretty = json ? JSON.stringify(JSON.parse(shown.trim()), null, 2) : shown;
+
+  type View = 'raw' | 'hexdump' | 'base64';
+  const [view, setView] = useState<View>('raw');
+
+  /*
+   * Recomputed only when the bytes or the view change: a hexdump of a megabyte
+   * is real work, and it was previously not being done at all.
+   */
+  const shownAs = useMemo(() => {
+    if (view === 'hexdump') return hexdumpOf(shown);
+    if (view === 'base64') return toBase64(shown);
+    return shown;
+  }, [view, shown]);
 
   const copy = async () => {
     try {
@@ -199,6 +213,45 @@ export function OutputPane() {
       <HashBand />
       <DetectionStrip />
 
+      {/*
+        How to look at the result, rather than what to do with it.
+
+        Reading the same bytes as text, as a dump, or as Base64 is the move you
+        make constantly when the answer is not text — and doing it by adding an
+        operation edits the recipe, which is a different thing from changing the
+        view. These do not touch the recipe at all.
+      */}
+      {output.length > 0 && !isImage && (
+        <div
+          role="tablist"
+          aria-label={t.output.views}
+          className="flex shrink-0 items-center gap-0.5 border-b border-line bg-surface px-2 py-1"
+        >
+          {(['raw', 'hexdump', 'base64'] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              aria-selected={view === mode}
+              onClick={() => setView(mode)}
+              className={cx(
+                'rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors',
+                view === mode
+                  ? 'bg-purple-soft text-text'
+                  : 'text-faint hover:bg-surface-3 hover:text-muted',
+              )}
+              style={view === mode ? { color: 'var(--purple-text)' } : undefined}
+            >
+              {t.output.viewNames[mode]}
+            </button>
+          ))}
+
+          {view !== 'raw' && (
+            <span className="ms-2 font-mono text-[10px] text-faint">{t.output.viewNote}</span>
+          )}
+        </div>
+      )}
+
       {result?.error && (
         <div
           className="shrink-0 border-b border-line px-3 py-2 font-mono text-micro"
@@ -236,10 +289,12 @@ export function OutputPane() {
           <pre
             className={cx(
               'p-3 font-mono text-[0.9375rem] leading-[1.7] text-text',
-              wrap ? 'whitespace-pre-wrap break-all' : 'whitespace-pre',
+              // A hexdump is a fixed-width grid: wrapping it destroys the one
+              // property that makes it readable.
+              view === 'raw' && wrap ? 'whitespace-pre-wrap break-all' : 'whitespace-pre',
             )}
           >
-            {json ? <JsonView source={pretty} /> : pretty}
+            {view === 'raw' ? json ? <JsonView source={pretty} /> : pretty : shownAs}
           </pre>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react';
-import { ChevronRight, Clock, GripVertical, Search, Star, X } from 'lucide-react';
+import { Clock, GripVertical, Search, Star, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { CATEGORY_ORDER, type OperationDef } from '../../engine';
 import { t } from '../../i18n/en';
@@ -108,54 +108,30 @@ function Row({ op, query }: { op: OperationDef; query: string }) {
   );
 }
 
-function Category({
-  name,
-  ops,
-  query,
-  open,
-  onToggle,
-}: {
-  name: string;
-  ops: OperationDef[];
-  query: string;
-  open: boolean;
-  onToggle: () => void;
-}) {
+/**
+ * A category heading, not a control.
+ *
+ * These used to be accordions, closed by default, so reaching an operation cost
+ * a click to open the right one and a guess about which one that was. With five
+ * hundred operations behind sixteen closed doors, the catalogue was a menu of
+ * headings rather than a list of tools.
+ *
+ * Flat and scrolling, the headings become signposts you pass rather than gates
+ * you open, and the search — which is how anyone with a specific operation in
+ * mind actually finds it — is unobstructed.
+ */
+function CategoryHeading({ name, count }: { name: string; count: number }) {
   return (
-    <section>
-      <h3>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={open}
-          className="flex w-full items-center gap-1.5 border-s-2 bg-surface-2 px-2.5 py-1.5 text-start transition-colors duration-100 ease-smooth hover:bg-surface-3"
-          style={{ borderInlineStartColor: open ? 'var(--purple)' : 'transparent' }}
-        >
-          <ChevronRight
-            size={11}
-            aria-hidden="true"
-            className={cx(
-              'shrink-0 text-faint transition-transform duration-150 ease-smooth',
-              open && 'rotate-90',
-            )}
-          />
-          {name === RECENT && (
-            <Clock size={10} aria-hidden="true" className="shrink-0 text-faint" />
-          )}
-          <span className="flex-1 truncate font-mono text-micro uppercase tracking-[0.06em] text-muted">
-            {name}
-          </span>
-          <span className="font-mono text-micro text-faint">{ops.length}</span>
-        </button>
-      </h3>
-      {open && (
-        <ul>
-          {ops.map((op) => (
-            <Row key={op.id} op={op} query={query} />
-          ))}
-        </ul>
-      )}
-    </section>
+    <h3
+      className="sticky top-0 z-10 flex items-center gap-2 border-y border-line bg-surface-2 px-2 py-1"
+      style={{ boxShadow: 'inset 2px 0 0 0 var(--purple-line)' }}
+    >
+      {name === RECENT && <Clock size={9} aria-hidden="true" className="shrink-0 text-faint" />}
+      <span className="flex-1 truncate font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+        {name}
+      </span>
+      <span className="font-mono text-[10px] tabular-nums text-faint">{count}</span>
+    </h3>
   );
 }
 
@@ -165,18 +141,6 @@ export function OperationsPane() {
   const recent = useStore((s) => s.recent);
   const addStep = useStore((s) => s.addStep);
   const [query, setQuery] = useState('');
-  /*
-   * Categories start closed, so the rail opens as a menu of sixteen headings
-   * with counts rather than a single list of five hundred names.
-   *
-   * It used to start with everything expanded, which meant the first thing
-   * anyone saw was an endless alphabetical scroll they had to read to use.
-   * Favourites is the exception — it is short, it is yours, and it is the one
-   * list worth having open. Searching expands everything again, because then
-   * the names *are* the answer.
-   */
-  const [collapsed, setCollapsed] = useState<string[]>(() => [...CATEGORY_ORDER]);
-
   const grouped = useMemo(() => {
     const q = query.trim();
     const matched = q
@@ -311,17 +275,12 @@ export function OperationsPane() {
         ) : (
           grouped.map(([name, ops]) => (
             <Fragment key={name}>
-              <Category
-                name={name}
-                ops={ops}
-                query={searching ? query.trim() : ''}
-                open={searching || !collapsed.includes(name)}
-                onToggle={() =>
-                  setCollapsed((c) =>
-                    c.includes(name) ? c.filter((n) => n !== name) : [...c, name],
-                  )
-                }
-              />
+              <CategoryHeading name={name} count={ops.length} />
+              <ul>
+                {ops.map((op) => (
+                  <Row key={op.id} op={op} query={searching ? query.trim() : ''} />
+                ))}
+              </ul>
             </Fragment>
           ))
         )}
