@@ -1,4 +1,4 @@
-import { Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { OperationsPane } from '../panes/OperationsPane';
 import { InputPane } from '../panes/InputPane';
@@ -182,28 +182,5 @@ export function Workspace() {
         </button>
       )}
     </div>
-  );
-}
-
-/** Lives here because only the workspace has a sidebar to collapse. */
-export function RailToggle() {
-  const sidebarOpen = useStore((s) => s.sidebarOpen);
-  const setSidebarOpen = useStore((s) => s.setSidebarOpen);
-
-  return (
-    <button
-      type="button"
-      onClick={() => setSidebarOpen(!sidebarOpen)}
-      aria-label={sidebarOpen ? t.layout.hideOperations : t.layout.showOperations}
-      title={sidebarOpen ? t.layout.hideOperations : t.layout.showOperations}
-      aria-pressed={!sidebarOpen}
-      className="inline-grid h-7 w-7 place-items-center rounded-sm text-muted transition-colors duration-150 ease-smooth hover:bg-surface-3 hover:text-text max-md:hidden"
-    >
-      {sidebarOpen ? (
-        <PanelLeftClose size={15} aria-hidden="true" />
-      ) : (
-        <PanelLeftOpen size={15} aria-hidden="true" />
-      )}
-    </button>
   );
 }

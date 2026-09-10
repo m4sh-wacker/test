@@ -108,7 +108,6 @@ interface State {
   mobilePane: MobilePane;
   outputMaximised: boolean;
   view: View;
-  railOpen: boolean;
   /** Which activity-bar view the sidebar is showing. */
   sidebar: SidebarView;
   sidebarOpen: boolean;
@@ -166,7 +165,6 @@ interface State {
   setView: (view: View) => void;
   setSidebar: (view: SidebarView) => void;
   setSidebarOpen: (open: boolean) => void;
-  setRailOpen: (open: boolean) => void;
   setRecipeView: (view: 'visual' | 'text') => void;
   setTheme: (theme: Theme) => void;
   setDialog: (dialog: Dialog) => void;
@@ -287,7 +285,6 @@ export const useStore = create<State>((set, get) => ({
   mobilePane: 'input',
   outputMaximised: false,
   view: 'workspace',
-  railOpen: read('decodebox-rail', true),
   sidebar: read('decodebox-sidebar', 'operations' as SidebarView),
   sidebarOpen: read('decodebox-sidebar-open', true),
   recipeView: 'visual',
@@ -685,11 +682,6 @@ export const useStore = create<State>((set, get) => ({
     // Opening the view is the request. Anything else would either compute a
     // search nobody asked for, or show a stale one.
     if (view === 'ctf' && !get().ctfRunning) void get().runCtf();
-  },
-
-  setRailOpen: (open) => {
-    set({ railOpen: open });
-    write('decodebox-rail', open);
   },
 
   setSidebar: (view) => {

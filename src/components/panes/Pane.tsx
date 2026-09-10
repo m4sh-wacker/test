@@ -58,21 +58,3 @@ export function Pane({ title, step, meta, actions, children, className }: Props)
     </section>
   );
 }
-
-/**
- * Hidden from assistive technology on purpose. The order is already carried by
- * the document: the panes come in flow order and each is a landmark with its
- * own name, so a screen reader announces "Input", "Recipe", "Output" in
- * sequence without help. Reading "1" before each one adds nothing but noise.
- */
-export function StepBadge({ step }: { step: number }) {
-  return (
-    <span
-      aria-hidden="true"
-      className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] font-mono text-[11px] font-semibold leading-none"
-      style={{ backgroundColor: 'var(--purple-soft)', color: 'var(--purple-text)' }}
-    >
-      {step}
-    </span>
-  );
-}
