@@ -36,6 +36,13 @@ function Connector() {
   return <span aria-hidden="true" className="h-px w-4 shrink-0 bg-line" />;
 }
 
+const OP_MIME = 'application/x-decodebox-op';
+
+/** Whether a drag is carrying an operation, readable during dragover. */
+function carriesOperation(event: React.DragEvent): boolean {
+  return Array.from(event.dataTransfer.types).includes(OP_MIME);
+}
+
 function DropSlot({
   index,
   active,
@@ -48,17 +55,25 @@ function DropSlot({
   onDrop: (event: React.DragEvent, index: number) => void;
 }) {
   return (
+    // The bar stays 4px because that is what reads as a seam between two nodes.
+    // The thing that catches the pointer is three times wider, which costs
+    // nothing visually and is the difference between landing it and not.
     <span
       onDragOver={(event) => {
         event.preventDefault();
         onEnter(index);
       }}
       onDrop={(event) => onDrop(event, index)}
-      className={cx(
-        'h-6 w-1 shrink-0 rounded-full transition-colors duration-100',
-        active ? 'bg-purple' : 'bg-transparent',
-      )}
-    />
+      className="grid h-6 w-3 shrink-0 cursor-copy place-items-center"
+    >
+      <span
+        aria-hidden="true"
+        className={cx(
+          'h-6 w-1 rounded-full transition-colors duration-100',
+          active ? 'bg-purple' : 'bg-transparent',
+        )}
+      />
+    </span>
   );
 }
 
@@ -233,6 +248,7 @@ export function Pipeline() {
 
   const [draggingUid, setDraggingUid] = useState<string | null>(null);
   const [slot, setSlot] = useState<number | null>(null);
+  const [dropping, setDropping] = useState(false);
 
   const paused = pausedAt !== null;
   // One name for the one condition. Keying `disabled` and the styling off
@@ -241,15 +257,48 @@ export function Pipeline() {
 
   const onDrop = (event: React.DragEvent, index: number) => {
     event.preventDefault();
-    const opId = event.dataTransfer.getData('application/x-decodebox-op');
+    // A slot that handled the drop must not let the pane handle it again at a
+    // different index.
+    event.stopPropagation();
+    const opId = event.dataTransfer.getData(OP_MIME);
     if (opId) addStep(opId, index);
     else if (draggingUid) reorderStep(draggingUid, index);
     setDraggingUid(null);
     setSlot(null);
+    setDropping(false);
   };
 
   return (
-    <section aria-label={t.recipe.title} className="shrink-0 border-y border-line bg-bg px-3 py-2">
+    <section
+      aria-label={t.recipe.title}
+      /*
+       * The whole pane takes a drop, and anything that lands between the slots
+       * goes on the end.
+       *
+       * Placement is the rare intent. Almost always the answer to "where in the
+       * recipe?" is "after the last step", and making that require a hit on a
+       * 4px seam turns the common case into the fiddly one. The seams still
+       * work, and still say where they will insert; missing one is no longer a
+       * failure.
+       */
+      onDragOver={(event) => {
+        if (!carriesOperation(event) && draggingUid === null) return;
+        event.preventDefault();
+        setDropping(true);
+      }}
+      onDragLeave={(event) => {
+        // Moving onto a child fires dragleave on the parent too. Only an exit
+        // from the pane itself counts.
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+        setDropping(false);
+        setSlot(null);
+      }}
+      onDrop={(event) => onDrop(event, steps.length)}
+      className={cx(
+        'shrink-0 border-y bg-bg px-3 py-2 transition-colors duration-150 ease-smooth',
+        dropping ? 'border-purple-line bg-purple-wash' : 'border-line',
+      )}
+    >
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <StepBadge step={2} />

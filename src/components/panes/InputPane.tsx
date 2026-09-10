@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { FileUp, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { encodeInput, formatBytes, INPUT_ENCODINGS } from '../../engine';
-import { SAMPLES } from '../../engine/samples';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
 import { IconButton } from '../ui/primitives';
@@ -124,27 +123,6 @@ export function InputPane() {
           </select>
         </div>
 
-        {input.length === 0 && (
-          <div className="shrink-0 border-t border-line px-3 py-2">
-            <span className="me-2 text-micro text-faint">{t.input.examples}</span>
-            <span className="inline-flex flex-wrap gap-1.5">
-              {SAMPLES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setInput(s.value)}
-                  className={cx(
-                    'rounded-full border border-line bg-surface-2 px-2 py-0.5',
-                    'font-mono text-micro text-muted transition-colors duration-150 ease-smooth',
-                    'hover:border-purple-line hover:text-text',
-                  )}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </span>
-          </div>
-        )}
       </div>
     </Pane>
   );

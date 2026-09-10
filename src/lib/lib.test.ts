@@ -1,8 +1,9 @@
 import { deflateRawSync } from 'node:zlib';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { listOperations, type OperationDef, type RecipeStep } from '../engine';
 import { decodeShare, encodeShare } from './share';
 import { fromText, toText } from './recipeText';
+import { loadRecipes } from './recipes';
 
 let cached: OperationDef[] | null = null;
 async function ops(): Promise<OperationDef[]> {
@@ -167,5 +168,87 @@ describe('recipe as text', () => {
   it('treats empty text as an empty recipe', async () => {
     const all = await ops();
     expect(fromText('   ', all)).toEqual({ steps: [] });
+  });
+});
+
+/**
+ * localStorage is writable by anything on this origin and by anyone with
+ * devtools open, so a stored recipe is untrusted input like a share link is.
+ */
+describe('stored recipes', () => {
+  const KEY = 'decodebox-recipes';
+
+  function store(value: unknown): void {
+    globalThis.localStorage.setItem(KEY, JSON.stringify(value));
+  }
+
+  beforeEach(() => {
+    // vitest runs in node, where there is no storage unless one is provided.
+    const map = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => map.get(k) ?? null,
+      setItem: (k: string, v: string) => void map.set(k, v),
+      removeItem: (k: string) => void map.delete(k),
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reads back a well-formed recipe', () => {
+    store([
+      {
+        id: 'r1',
+        name: 'hex it',
+        savedAt: 1,
+        steps: [{ uid: 'u1', opId: 'to-hex', args: [{ name: 'Delimiter', type: 'option', value: 'Space' }], disabled: false }],
+      },
+    ]);
+    const [recipe] = loadRecipes();
+    expect(recipe?.name).toBe('hex it');
+    expect(recipe?.steps[0]?.args[0]?.value).toBe('Space');
+  });
+
+  it('drops a recipe whose step arguments are not a list', () => {
+    // This exact shape reached instantiate() and threw
+    // "step.args.map is not a function" on the click that loaded it.
+    store([{ id: 'r1', name: 'malformed', savedAt: 1, steps: [{ opId: 'to-hex', args: { not: 'a list' } }] }]);
+    expect(loadRecipes()).toEqual([]);
+  });
+
+  it('drops a recipe whole rather than loading part of it', () => {
+    store([
+      {
+        id: 'r1',
+        name: 'half readable',
+        savedAt: 1,
+        steps: [
+          { uid: 'u1', opId: 'to-hex', args: [], disabled: false },
+          { uid: 'u2', opId: 'to-base64', args: [{ noName: true }], disabled: false },
+        ],
+      },
+    ]);
+    expect(loadRecipes()).toEqual([]);
+  });
+
+  it('refuses an argument value that is not the primitive it claims to be', () => {
+    store([
+      {
+        id: 'r1',
+        name: 'nested',
+        savedAt: 1,
+        steps: [{ uid: 'u1', opId: 'to-base64', args: [{ name: 'Alphabet', type: 'string', value: { nested: [1] } }], disabled: false }],
+      },
+    ]);
+    const value = loadRecipes()[0]?.steps[0]?.args[0]?.value;
+    expect(['string', 'number', 'boolean']).toContain(typeof value);
+  });
+
+  it('survives storage that is not JSON at all', () => {
+    globalThis.localStorage.setItem(KEY, 'not json {');
+    expect(loadRecipes()).toEqual([]);
+    store({ not: 'an array' });
+    expect(loadRecipes()).toEqual([]);
   });
 });

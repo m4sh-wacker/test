@@ -7,6 +7,7 @@ import { Dialog } from './Dialog';
 
 export function RecipeLibrary() {
   const steps = useStore((s) => s.steps);
+  const chain = useStore((s) => s.chain);
   const saved = useStore((s) => s.savedRecipes);
   const operations = useStore((s) => s.operations);
   const saveCurrentRecipe = useStore((s) => s.saveCurrentRecipe);
@@ -16,16 +17,32 @@ export function RecipeLibrary() {
 
   const [name, setName] = useState('');
 
-  const save = () => {
-    if (steps.length === 0) return;
-    saveCurrentRecipe(name);
-    setName('');
-  };
-
   const describe = (opIds: string[]) =>
     opIds
       .map((id) => operations.find((o) => o.id === id)?.name ?? id)
       .join(' → ');
+
+  /*
+   * What gets saved.
+   *
+   * Detection does not write to the recipe; the chain it finds stays a
+   * suggestion until somebody presses Apply. So the ordinary path through this
+   * tool — paste, watch it unwrap, decide it was useful — arrived here with an
+   * empty recipe and a disabled button, and the only hint was "build a recipe
+   * first", which is not what the person just did.
+   *
+   * The recipe wins when there is one. Otherwise the detected chain is offered
+   * by name, so saving it is a decision and not a surprise.
+   */
+  const detected = chain.length > 1 ? (chain[chain.length - 1]?.steps ?? []) : [];
+  const usingDetected = steps.length === 0 && detected.length > 0;
+  const toSave = steps.length > 0 ? steps : detected;
+
+  const save = () => {
+    if (toSave.length === 0) return;
+    saveCurrentRecipe(name, toSave);
+    setName('');
+  };
 
   return (
     <Dialog
@@ -50,12 +67,26 @@ export function RecipeLibrary() {
           maxLength={80}
           className="min-w-0 flex-1 rounded-control border border-line bg-surface-2 px-2.5 py-1.5 text-xs2 outline-none transition-colors duration-150 focus:border-purple-line"
         />
-        <Button type="submit" variant="primary" disabled={steps.length === 0}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={toSave.length === 0}
+          title={usingDetected ? t.library.saveDetected(describe(toSave.map((x) => x.opId))) : undefined}
+        >
           {t.library.save}
         </Button>
       </form>
 
-      {steps.length === 0 && <p className="mt-2 text-micro text-faint">{t.library.nothingToSave}</p>}
+      {usingDetected && (
+        <p className="mt-2 text-micro text-faint">
+          {t.library.detectedNote}{' '}
+          <span className="font-mono text-muted">{describe(toSave.map((x) => x.opId))}</span>
+        </p>
+      )}
+
+      {toSave.length === 0 && (
+        <p className="mt-2 text-micro text-faint">{t.library.nothingToSave}</p>
+      )}
 
       <div className="mt-4">
         <h3 className="mb-2 font-mono text-micro uppercase tracking-wider text-faint">

@@ -32,7 +32,7 @@ import {
 
 type Theme = 'light' | 'dark' | 'system';
 export type MobilePane = 'operations' | 'recipe' | 'input' | 'output';
-export type View = 'workspace' | 'report' | 'ctf';
+export type View = 'workspace' | 'ctf';
 export type Dialog = 'help' | 'share' | 'library' | 'download' | null;
 
 interface State {
@@ -127,7 +127,7 @@ interface State {
   setCtfFormat: (format: string) => void;
   applyHint: (hint: Hint) => void;
 
-  saveCurrentRecipe: (name: string) => void;
+  saveCurrentRecipe: (name: string, steps?: RecipeStep[]) => void;
   loadSavedRecipe: (id: string) => void;
   removeSavedRecipe: (id: string) => void;
 
@@ -554,8 +554,11 @@ export const useStore = create<State>((set, get) => ({
   setActiveLayer: (id) => set({ activeLayerId: id }),
   toggleWhy: () => set((s) => ({ whyOpen: !s.whyOpen })),
 
-  saveCurrentRecipe: (name) => {
-    set({ savedRecipes: saveRecipe(name, get().steps) });
+  saveCurrentRecipe: (name, steps) => {
+    // `steps` is how the library saves a chain that detection built but nobody
+    // ever applied. Without it the only savable recipe is one assembled by
+    // hand, which is not how most of these are arrived at.
+    set({ savedRecipes: saveRecipe(name, steps ?? get().steps) });
   },
 
   loadSavedRecipe: (id) => {

@@ -21,7 +21,6 @@ export const t = {
     share: 'Share this recipe',
     library: 'Saved recipes',
     workspace: 'Workspace',
-    report: 'Report',
     ctf: 'Search — what to try next',
   },
 
@@ -81,7 +80,6 @@ export const t = {
     clear: 'Clear the input',
     loadFile: 'Load a file',
     drop: 'Drop to load',
-    examples: 'Try:',
     encoding: 'Read typed input as',
     encodingHint:
       'How the text you type becomes bytes. A loaded file is already bytes, so it is read raw.',
@@ -89,11 +87,6 @@ export const t = {
 
   output: {
     title: 'Output',
-    empty: 'Nothing yet.',
-    emptyDetail:
-      'Paste or drop anything into the input above — a token, a payload, a file. DecodeBox ' +
-      'works out what it is, unwraps every layer it can, and shows the evidence for each one.',
-    tryExample: 'Try an example',
     fromDetection: 'auto-decoded',
     imageAlt: 'The decoded image',
     imageNote: 'Rendered locally. This image was never uploaded anywhere.',
@@ -120,37 +113,22 @@ export const t = {
     incompleteTitle: 'The chain stopped early — there may be another layer under this',
   },
 
+  /*
+   * What survived the report view.
+   *
+   * These are the strings the Search view uses to present the analysis engine's
+   * findings and indicators. The rest of the report's vocabulary went with the
+   * view itself; a string nothing renders is a claim about an interface that
+   * does not exist.
+   */
   report: {
-    title: 'Analysis report',
-    summary: (formats: string, depth: number) =>
-      `Unwrapped ${depth} ${depth === 1 ? 'layer' : 'layers'}: ${formats}.`,
-    summaryPlain: 'No encoding detected. The content was scanned as it stands.',
     findings: 'Findings',
     indicators: 'Indicators',
     layers: 'Layers',
-    took: 'Analysis time',
-    structure: 'Structure',
     foundAt: 'Found at',
-    type: 'Type',
-    value: 'Value',
-    copy: 'Copy report',
-    copied: 'Copied',
-    expand: 'Expand',
-    collapse: 'Collapse',
-    embedded: (label: string) => `${label} inside the parent`,
-    embeddedAt: (offset: number) => `Found at offset ${offset} within the parent`,
-    noFindings: 'Nothing here raised a security finding.',
     noIndicators: 'No addresses, hosts, paths or keys were found at any layer.',
     defangNote:
-      'Indicators are shown defanged, so the report can be pasted into a ticket without anything becoming a live link.',
-    truncated:
-      'A limit was reached, so the tree is not exhaustive. Everything shown is real; there may be more below it.',
-    emptyTitle: 'Nothing to analyse yet',
-    emptyDetail:
-      'Paste something into the input. DecodeBox will unwrap every layer it can find, then report what is inside and what is dangerous about it.',
-    working: 'Analysing…',
-    pending: 'Waiting for input.',
-    privacy: 'Every layer above was decoded in this browser. Nothing was uploaded.',
+      'Indicators are shown defanged, so they can be pasted into a ticket without anything becoming a live link.',
   },
 
   /*
@@ -186,6 +164,7 @@ export const t = {
     applyHint: 'Load this as the recipe',
     copy: 'Copy',
     copied: 'Copied',
+    copyReport: 'Copy as Markdown',
     atInput: 'in the input',
     atDepth: (n: number, path: string) => `${n} ${n === 1 ? 'layer' : 'layers'} down · ${path}`,
     layers: (n: number) => `${n} ${n === 1 ? 'layer' : 'layers'} searched`,
@@ -228,7 +207,16 @@ export const t = {
     subtitle: 'Saved in this browser only.',
     namePlaceholder: 'Name this recipe',
     save: 'Save',
-    nothingToSave: 'Build a recipe first, then save it here.',
+    nothingToSave: 'Nothing to save yet. Add an operation to the recipe, or paste something and let detection find one.',
+    /*
+     * Auto-decoding does not fill the recipe — the chain it finds is a
+     * suggestion until somebody applies it. That is the right default, and it
+     * also meant pasting a payload, watching it unwrap, and then finding Save
+     * greyed out with no clue why. The recipe on offer is named, so saving it
+     * is a decision rather than a surprise.
+     */
+    saveDetected: (chain: string) => `Save what detection found: ${chain}`,
+    detectedNote: 'The recipe is empty, so this saves the chain detection found.',
     saved: 'Saved',
     empty: 'Nothing saved yet.',
     remove: (name: string) => `Delete ${name}`,

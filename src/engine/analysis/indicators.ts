@@ -83,16 +83,38 @@ const RULES: Rule[] = [
   },
 ];
 
-/** Turns a live indicator into something safe to paste into a ticket. */
-export function defang(value: string): string {
+/**
+ * Turns a live indicator into something safe to paste into a ticket.
+ *
+ * IPv6 takes a different transform because it has no dots to neutralise and
+ * every separator it does have is a colon. Running the ordinary rules over one
+ * leaves it exactly as routable as it arrived.
+ */
+export function defang(value: string, kind?: IndicatorKind): string {
+  if (kind === 'ipv6') return value.replace(/:/g, '[:]');
   return value
-    .replace(/^http/i, 'hxxp')
+    // Anchored at the start, this missed the scheme of every URL that was not
+    // the whole value — which is every URL found inside a command line.
+    .replace(/\bhttp(s?)(?=:\/\/)/gi, 'hxxp$1')
     .replace(/:\/\//g, '[://]')
     .replace(/\./g, '[.]')
     .replace(/@/g, '[at]');
 }
 
-const NEEDS_DEFANG = new Set<IndicatorKind>(['url', 'domain', 'ipv4', 'email']);
+/*
+ * Which kinds get neutralised.
+ *
+ * The rule is "could a client turn this into something clickable", not "is it
+ * scary". Commands are on the list because they routinely carry a URL inside
+ * them — `curl http://…` is the whole point of finding one — and a chat client
+ * pasted a command will happily linkify the middle of it. Hashes, paths,
+ * registry keys and CVEs are left alone: nothing links them, and mangling a
+ * file path makes it harder to read for no benefit.
+ *
+ * IPv6 was missing from this set while the interface said every indicator was
+ * defanged. Either the set or the sentence had to change.
+ */
+const NEEDS_DEFANG = new Set<IndicatorKind>(['url', 'domain', 'ipv4', 'ipv6', 'email', 'command']);
 
 /** Keeps the report readable when a single node is enormous. */
 const MAX_PER_KIND = 40;
@@ -123,7 +145,7 @@ export function extractIndicators(text: string, depth: number, path: string): In
       found.push({
         kind: rule.kind,
         value,
-        defanged: NEEDS_DEFANG.has(rule.kind) ? defang(value) : value,
+        defanged: NEEDS_DEFANG.has(rule.kind) ? defang(value, rule.kind) : value,
         depth,
         path,
       });

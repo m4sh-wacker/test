@@ -19,6 +19,7 @@ export default {
         purple: 'var(--purple)',
         'purple-text': 'var(--purple-text)',
         'purple-soft': 'var(--purple-soft)',
+        'purple-wash': 'var(--purple-wash)',
         'purple-line': 'var(--purple-line)',
         ok: 'var(--green)',
         warn: 'var(--amber)',

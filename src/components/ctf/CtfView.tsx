@@ -6,17 +6,23 @@ import {
   Fingerprint,
   Flag,
   KeyRound,
+  Layers as LayersIcon,
+  Lightbulb,
   Play,
   RefreshCw,
   Search,
   Shapes,
+  ShieldAlert,
+  Target,
   Unlock,
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import type { Hint, HintKind } from '../../engine';
+import { formatBytes, toMarkdown } from '../../engine';
+import type { Hint, HintKind, Layer } from '../../engine';
 import { t } from '../../i18n/en';
-import { confidenceColor, cx } from '../ui/helpers';
+import { bySeverity, confidenceColor, cx } from '../ui/helpers';
 import { Button, ConfidenceBar } from '../ui/primitives';
+import { CopyChip, FindingCard, IndicatorList } from '../analysis/Evidence';
 
 /**
  * Search.
@@ -146,6 +152,79 @@ function HintRow({ hint }: { hint: Hint }) {
   );
 }
 
+function SectionHead({
+  icon,
+  title,
+  count,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count?: number;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <span className="flex items-center" style={{ color: 'var(--purple-text)' }}>
+        {icon}
+      </span>
+      <h2
+        className="font-mono text-micro font-semibold uppercase tracking-[0.08em]"
+        style={{ color: 'var(--purple-text)' }}
+      >
+        {title}
+      </h2>
+      {count !== undefined && count > 0 && (
+        <span className="font-mono text-micro text-faint">{count}</span>
+      )}
+      <span className="h-px flex-1 bg-line" />
+      {action}
+    </div>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="rounded-control border border-dashed border-line px-3 py-4 text-center text-micro text-faint">
+      {children}
+    </p>
+  );
+}
+
+/**
+ * Every layer the search actually looked at.
+ *
+ * "3 layers searched" is a claim; this is the claim's contents. It is also the
+ * fastest way to see that the thing you expected to be in there is not.
+ */
+function LayerRow({ layer, last }: { layer: Layer; last: boolean }) {
+  return (
+    <li className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-control border border-line bg-surface px-2.5 py-1.5">
+      <span className="font-mono text-micro text-faint">{layer.depth}</span>
+      <span className="font-mono text-micro font-medium" style={{ color: 'var(--purple-text)' }}>
+        {layer.format}
+      </span>
+      <span className="font-mono text-[10px] text-faint">{formatBytes(layer.byteLength)}</span>
+      {layer.depth > 0 && (
+        <span className="font-mono text-[10px]" style={{ color: confidenceColor(layer.confidence) }}>
+          {Math.round(layer.confidence * 100)}%
+        </span>
+      )}
+      <code className="min-w-0 flex-1 basis-64 truncate font-mono text-micro text-muted">
+        {layer.output.slice(0, 160)}
+      </code>
+      {last && layer.terminus && (
+        <span
+          className="shrink-0 font-mono text-[10px] uppercase tracking-wider"
+          style={{ color: layer.terminus.complete ? 'var(--green)' : 'var(--amber)' }}
+        >
+          {layer.terminus.reason}
+        </span>
+      )}
+    </li>
+  );
+}
+
 function Toolbar() {
   const format = useStore((s) => s.ctfFormat);
   const setCtfFormat = useStore((s) => s.setCtfFormat);
@@ -186,6 +265,14 @@ export function CtfView() {
   const report = useStore((s) => s.ctf);
   const running = useStore((s) => s.ctfRunning);
   const input = useStore((s) => s.input);
+  /*
+   * The analysis engine has been running on every input from the start and its
+   * results were rendered in one view that nothing could open. Findings and
+   * indicators are exactly what "search this for anything worth finding" means,
+   * so they belong here, and nothing extra is computed to put them here.
+   */
+  const analysis = useStore((s) => s.analysis);
+  const chain = useStore((s) => s.chain);
 
   if (input.trim().length === 0) {
     return (
@@ -240,8 +327,29 @@ export function CtfView() {
           </section>
         )}
 
+        {/* Ahead of the ranked guesses, because a critical finding is not a
+            suggestion and should not have to queue behind one. */}
+        {analysis && analysis.findings.length > 0 && (
+          <section>
+            <SectionHead
+              icon={<ShieldAlert size={13} aria-hidden="true" />}
+              title={t.report.findings}
+              count={analysis.findings.length}
+            />
+            <ul className="space-y-2">
+              {[...analysis.findings].sort(bySeverity).map((finding) => (
+                <FindingCard key={finding.id} finding={finding} />
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section>
-          <h2 className="mb-2 text-micro uppercase tracking-wider text-faint">{t.ctf.hints}</h2>
+          <SectionHead
+            icon={<Lightbulb size={13} aria-hidden="true" />}
+            title={t.ctf.hints}
+            count={report?.hints.length}
+          />
 
           {running && !report ? (
             <p className="text-xs2 text-muted">{t.ctf.working}</p>
@@ -252,11 +360,47 @@ export function CtfView() {
               ))}
             </ul>
           ) : (
-            <p className="text-xs2 text-muted">
-              {flags.length > 0 ? t.ctf.noHints : `${t.ctf.noFlags} ${t.ctf.noHints}`}
-            </p>
+            <Empty>{flags.length > 0 ? t.ctf.noHints : `${t.ctf.noFlags} ${t.ctf.noHints}`}</Empty>
           )}
         </section>
+
+        {analysis && (
+          <section>
+            <SectionHead
+              icon={<Target size={13} aria-hidden="true" />}
+              title={t.report.indicators}
+              count={analysis.indicators.length}
+              action={
+                analysis.indicators.length > 0 ? (
+                  <CopyChip text={analysis.indicators.map((i) => i.defanged).join('\n')} />
+                ) : undefined
+              }
+            />
+            {analysis.indicators.length === 0 ? (
+              <Empty>{t.report.noIndicators}</Empty>
+            ) : (
+              <>
+                <IndicatorList indicators={analysis.indicators} />
+                <p className="mt-2 text-micro text-faint">{t.report.defangNote}</p>
+              </>
+            )}
+          </section>
+        )}
+
+        {chain.length > 0 && (
+          <section>
+            <SectionHead
+              icon={<LayersIcon size={13} aria-hidden="true" />}
+              title={t.report.layers}
+              count={chain.length}
+            />
+            <ul className="space-y-1">
+              {chain.map((layer, index) => (
+                <LayerRow key={layer.id} layer={layer} last={index === chain.length - 1} />
+              ))}
+            </ul>
+          </section>
+        )}
 
         {report?.truncated && (
           <p className="text-micro" style={{ color: 'var(--amber)' }}>
@@ -264,7 +408,12 @@ export function CtfView() {
           </p>
         )}
 
-        <p className="border-t border-line pt-3 text-micro text-faint">{t.ctf.privacy}</p>
+        <div className="flex flex-wrap items-center gap-3 border-t border-line pt-3">
+          <p className="min-w-0 flex-1 text-micro text-faint">{t.ctf.privacy}</p>
+          {analysis && (
+            <CopyChip text={toMarkdown(analysis)} label={t.ctf.copyReport} />
+          )}
+        </div>
       </div>
     </main>
   );

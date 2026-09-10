@@ -5,7 +5,6 @@ import { useHotkeys } from './hooks/useHotkeys';
 import { Header } from './components/layout/Header';
 import { Workspace } from './components/layout/Workspace';
 import { StatusBar } from './components/layout/StatusBar';
-import { ReportView } from './components/report/ReportView';
 import { CtfView } from './components/ctf/CtfView';
 import { HelpDialog } from './components/ui/HelpDialog';
 import { ShareDialog } from './components/ui/ShareDialog';
@@ -29,7 +28,6 @@ export default function App() {
     <div className="flex h-dvh flex-col overflow-hidden">
       <Header />
       {view === 'workspace' && <Workspace />}
-      {view === 'report' && <ReportView />}
       {view === 'ctf' && <CtfView />}
       <StatusBar />
       {dialog === 'help' && <HelpDialog />}
