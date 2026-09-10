@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Circle, Eye, EyeOff, Play, Plus, SkipForward, Trash2, X } from 'lucide-react';
+import { Circle, Eye, EyeOff, GripVertical, Play, Plus, SkipForward, Trash2, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
@@ -99,7 +99,7 @@ function Node({ index }: { index: number }) {
   return (
     <span
       className={cx(
-        'group flex shrink-0 items-center gap-1.5 rounded-full border ps-1.5 pe-1 py-1',
+        'group flex shrink-0 items-center gap-1 rounded-full border ps-1 pe-1 py-1',
         'transition-colors duration-150 ease-smooth',
         step.disabled && 'opacity-40',
         failed
@@ -111,6 +111,22 @@ function Node({ index }: { index: number }) {
               : 'border-line bg-surface hover:border-line-strong',
       )}
     >
+      {/*
+        Somewhere to actually grab.
+
+        The chip was `draggable` and every pixel of it was a <button>, and a
+        button swallows drag initiation — the gesture never starts, so dragging
+        a step out did nothing while clicking the cross worked fine. This is a
+        plain span, which drags, and it says so with a cursor and a grip.
+      */}
+      <span
+        aria-hidden="true"
+        className="flex shrink-0 cursor-grab items-center text-faint opacity-40 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+        title={t.recipe.drag}
+      >
+        <GripVertical size={11} />
+      </span>
+
       <button
         type="button"
         onClick={() => toggleBreakpoint(step.uid)}
@@ -134,9 +150,10 @@ function Node({ index }: { index: number }) {
 
       <button
         type="button"
+        draggable
         onClick={() => selectStep(step.uid)}
         aria-pressed={isSelected}
-        className="flex items-center gap-1.5"
+        className="flex cursor-grab items-center gap-1.5 active:cursor-grabbing"
       >
         <span className="font-mono text-[10px] text-faint">{index + 1}</span>
         <span className="whitespace-nowrap font-mono text-xs2">{op?.name ?? step.opId}</span>
