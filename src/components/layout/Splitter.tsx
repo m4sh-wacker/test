@@ -6,35 +6,46 @@ interface Props {
   min: number;
   max: number;
   label: string;
-  onChange: (width: number) => void;
+  /**
+   * Which way the pane it sizes grows.
+   *
+   * 'horizontal' is a vertical bar you drag left and right; 'vertical' is a
+   * horizontal bar you drag up and down. The names follow ARIA, where the
+   * orientation describes the separator's own axis of movement rather than the
+   * line it draws — which is the opposite of the intuition and worth saying
+   * once here rather than guessing at every call site.
+   */
+  axis?: 'horizontal' | 'vertical';
+  onChange: (size: number) => void;
 }
 
 /**
- * A draggable pane divider that is also operable from the keyboard. Resizing a
- * workspace with a mouse only is a common accessibility gap in tools like this
- * one, and it costs almost nothing to avoid.
+ * A draggable pane divider that is also operable from the keyboard.
+ *
+ * Resizing a workspace with a mouse only is a common accessibility gap in tools
+ * like this one, and it costs almost nothing to avoid.
  */
-export function Splitter({ value, min, max, label, onChange }: Props) {
+export function Splitter({ value, min, max, label, axis = 'horizontal', onChange }: Props) {
   const dragging = useRef(false);
+  const vertical = axis === 'vertical';
 
-  const clamp = useCallback(
-    (width: number) => Math.min(max, Math.max(min, width)),
-    [min, max],
-  );
+  const clamp = useCallback((size: number) => Math.min(max, Math.max(min, size)), [min, max]);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     dragging.current = true;
-    const startX = event.clientX;
-    const startWidth = value;
-    const target = event.currentTarget;
-    target.setPointerCapture(event.pointerId);
+    const start = vertical ? event.clientY : event.clientX;
+    const startSize = value;
+    event.currentTarget.setPointerCapture(event.pointerId);
 
     const onMove = (move: PointerEvent) => {
       if (!dragging.current) return;
+      if (vertical) {
+        onChange(clamp(startSize + (move.clientY - start)));
+        return;
+      }
       // Logical direction: in RTL the pane grows as the pointer moves the other way.
       const rtl = document.documentElement.dir === 'rtl';
-      const delta = (move.clientX - startX) * (rtl ? -1 : 1);
-      onChange(clamp(startWidth + delta));
+      onChange(clamp(startSize + (move.clientX - start) * (rtl ? -1 : 1)));
     };
 
     const onUp = () => {
@@ -49,19 +60,28 @@ export function Splitter({ value, min, max, label, onChange }: Props) {
 
   const onKeyDown = (event: React.KeyboardEvent) => {
     const step = event.shiftKey ? 64 : 16;
-    if (event.key === 'ArrowLeft') {
+    const less = vertical ? 'ArrowUp' : 'ArrowLeft';
+    const more = vertical ? 'ArrowDown' : 'ArrowRight';
+
+    if (event.key === less) {
       event.preventDefault();
       onChange(clamp(value - step));
-    } else if (event.key === 'ArrowRight') {
+    } else if (event.key === more) {
       event.preventDefault();
       onChange(clamp(value + step));
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      onChange(min);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      onChange(max);
     }
   };
 
   return (
     <div
       role="separator"
-      aria-orientation="vertical"
+      aria-orientation={vertical ? 'horizontal' : 'vertical'}
       aria-label={label}
       aria-valuenow={Math.round(value)}
       aria-valuemin={min}
@@ -70,12 +90,16 @@ export function Splitter({ value, min, max, label, onChange }: Props) {
       onPointerDown={onPointerDown}
       onKeyDown={onKeyDown}
       className={cx(
-        'group relative w-px shrink-0 cursor-col-resize bg-line',
+        'group relative shrink-0 bg-line',
         'transition-colors duration-150 ease-smooth hover:bg-purple-line focus-visible:bg-purple',
+        vertical ? 'h-px w-full cursor-row-resize' : 'w-px cursor-col-resize',
       )}
     >
-      {/* A one-pixel line is an unfair click target; widen the hit area only. */}
-      <span aria-hidden="true" className="absolute inset-y-0 -inset-x-1.5" />
+      {/* A one-pixel line is an unfair pointer target; widen the hit area only. */}
+      <span
+        aria-hidden="true"
+        className={cx('absolute', vertical ? 'inset-x-0 -inset-y-1.5' : 'inset-y-0 -inset-x-1.5')}
+      />
     </div>
   );
 }

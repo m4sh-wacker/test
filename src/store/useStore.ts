@@ -102,6 +102,7 @@ interface State {
   ctfRunning: boolean;
 
   paneWidths: { operations: number; recipe: number };
+  paneHeights: { input: number; recipe: number };
   mobilePane: MobilePane;
   outputMaximised: boolean;
   view: View;
@@ -153,6 +154,8 @@ interface State {
   removeSavedRecipe: (id: string) => void;
 
   setPaneWidth: (pane: 'operations' | 'recipe', width: number) => void;
+  /** Pane heights in pixels, dragged like the widths and kept like them. */
+  setPaneHeight: (pane: 'input' | 'recipe', height: number) => void;
   setMobilePane: (pane: MobilePane) => void;
   setOutputMaximised: (maximised: boolean) => void;
   setView: (view: View) => void;
@@ -164,6 +167,7 @@ interface State {
 
 const THEME_KEY = 'decodebox-theme';
 const PANES_KEY = 'decodebox-panes';
+const HEIGHTS_KEY = 'decodebox-pane-heights';
 const FAVOURITES_KEY = 'decodebox-favourites';
 const RECENT_KEY = 'decodebox-recent';
 const RECENT_LIMIT = 8;
@@ -272,6 +276,7 @@ export const useStore = create<State>((set, get) => ({
   ctfRunning: false,
 
   paneWidths: read(PANES_KEY, { operations: 264, recipe: 380 }),
+  paneHeights: read(HEIGHTS_KEY, { input: 200, recipe: 116 }),
   mobilePane: 'input',
   outputMaximised: false,
   view: 'workspace',
@@ -649,6 +654,12 @@ export const useStore = create<State>((set, get) => ({
 
   removeSavedRecipe: (id) => {
     set({ savedRecipes: deleteRecipe(id) });
+  },
+
+  setPaneHeight: (pane, height) => {
+    const paneHeights = { ...get().paneHeights, [pane]: height };
+    set({ paneHeights });
+    write(HEIGHTS_KEY, paneHeights);
   },
 
   setPaneWidth: (pane, width) => {

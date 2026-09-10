@@ -30,6 +30,8 @@ import { t } from '../../i18n/en';
 export function Workspace() {
   const paneWidths = useStore((s) => s.paneWidths);
   const setPaneWidth = useStore((s) => s.setPaneWidth);
+  const paneHeights = useStore((s) => s.paneHeights);
+  const setPaneHeight = useStore((s) => s.setPaneHeight);
   const mobilePane = useStore((s) => s.mobilePane);
   const maximised = useStore((s) => s.outputMaximised);
   const railOpen = useStore((s) => s.railOpen);
@@ -89,21 +91,59 @@ export function Workspace() {
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/*
-            The input gets what it needs, not half the window.
+            Every edge is the user's to move.
 
-            An empty textarea was taking an equal share and pushing the output
-            below the fold, so the first thing anyone saw after pasting was the
-            box they had just pasted into. Capping it means the answer is on
-            screen at the moment it appears, which is the whole promise of the
-            tool. It still grows with its content up to the cap, and the output
-            takes everything left over.
+            The input used to be capped at 38% of the window and the recipe took
+            whatever it took. Those are reasonable defaults and they are still
+            the defaults, but they were also the only option: someone working on
+            a 200-line payload could not give it more room, and someone with a
+            twelve-step recipe could not see it all at once. Both are now
+            dragged, both are remembered, and both move from the keyboard.
           */}
           {!maximised && (
-            <div className="flex min-h-0 shrink-0 basis-auto" style={{ maxHeight: '38%' }}>
-              <InputPane />
-            </div>
+            <>
+              {/*
+                Sized by flex-basis, not by height.
+
+                These wrappers are flex items in a column and flex containers in
+                their own right. With `flex-basis: auto` the used main size comes
+                from the content, and an inline `height` — even `!important` —
+                was applied and then ignored: 640px of inline style measured
+                200px on screen. `flex: 0 0 <n>px` states the size in the terms
+                the algorithm actually resolves.
+              */}
+              <div
+                className="flex min-h-0 overflow-hidden"
+                style={{ flex: `0 0 ${paneHeights.input}px` }}
+              >
+                <InputPane />
+              </div>
+              <Splitter
+                axis="vertical"
+                value={paneHeights.input}
+                min={80}
+                max={640}
+                label={t.layout.resizeInput}
+                onChange={(height) => setPaneHeight('input', height)}
+              />
+            </>
           )}
-          <Pipeline />
+
+          <div
+            className="flex min-h-0 overflow-y-auto"
+            style={{ flex: `0 0 ${paneHeights.recipe}px` }}
+          >
+            <Pipeline />
+          </div>
+          <Splitter
+            axis="vertical"
+            value={paneHeights.recipe}
+            min={64}
+            max={520}
+            label={t.layout.resizeRecipeHeight}
+            onChange={(height) => setPaneHeight('recipe', height)}
+          />
+
           <div className="flex min-h-0 flex-1 basis-0">
             <OutputPane />
           </div>

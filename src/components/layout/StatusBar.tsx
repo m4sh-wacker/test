@@ -57,35 +57,16 @@ export function StatusBar() {
         </span>
       )}
 
-      {/* One right-aligned group rather than two competing `ms-auto`s, which is
-          what let the timing and the privacy line each claim the same edge. */}
-      <span className="ms-auto flex items-center gap-4">
-        {result && !result.error && (
-          <span className="font-mono">{result.durationMs.toFixed(1)} ms</span>
-        )}
-        {/*
-          Project identity, at the foot where a person looks for it: whose it
-          is, what licence it carries, where the code lives. Three facts, each
-          checkable, none of them a claim of endorsement.
-        */}
-        <a
-          href="https://owasp.org/www-project-decodebox/"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="hidden transition-colors duration-150 ease-smooth hover:text-text sm:inline"
-        >
-          {t.status.owasp}
-        </a>
-        <a
-          href="https://github.com/OWASP/DecodeBox/blob/main/LICENSE"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="hidden font-mono transition-colors duration-150 ease-smooth hover:text-text xl:inline"
-        >
-          {t.status.licence}
-        </a>
-        <span className="hidden lg:inline">{t.status.privacy}</span>
-      </span>
+      {/*
+        The affiliation, the licence and the privacy line all used to sit here.
+        They are standing claims rather than status: none of them changes while
+        you work, so a status bar reprints them on every screen for the life of
+        the session and they stop being read. The header carries the identity;
+        the download dialog and the README carry the rest.
+      */}
+      {result && !result.error && (
+        <span className="ms-auto font-mono">{result.durationMs.toFixed(1)} ms</span>
+      )}
     </footer>
   );
 }

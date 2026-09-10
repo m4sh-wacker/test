@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Circle, Eye, EyeOff, Play, Plus, SkipForward, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Circle, Eye, EyeOff, Play, Plus, SkipForward, Trash2, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { t } from '../../i18n/en';
 import { cx } from '../ui/helpers';
@@ -233,6 +233,7 @@ function Inspector() {
 
 export function Pipeline() {
   const steps = useStore((s) => s.steps);
+  const removeStepFromRecipe = useStore((s) => s.removeStep);
   const input = useStore((s) => s.input);
   const result = useStore((s) => s.bakeResult);
   const autoBake = useStore((s) => s.autoBake);
@@ -250,10 +251,49 @@ export function Pipeline() {
   const [slot, setSlot] = useState<number | null>(null);
   const [dropping, setDropping] = useState(false);
 
+  /*
+   * Escape during a drag means cancel, not delete.
+   *
+   * The browser reports a cancelled drag and a drag released over nothing
+   * identically — `dropEffect` is 'none' for both — so without this, backing
+   * out of a drag would silently delete the step you were trying to keep.
+   */
+  const cancelled = useRef(false);
+  const watchEscape = useRef<((event: KeyboardEvent) => void) | null>(null);
+
+  // Dragging a step, currently outside the pane: releasing here removes it.
+  const removing = draggingUid !== null && !dropping;
+
   const paused = pausedAt !== null;
   // One name for the one condition. Keying `disabled` and the styling off
   // separate copies of the same expression is how they drift apart.
   const empty = steps.length === 0;
+
+  const startStepDrag = (uid: string) => {
+    setDraggingUid(uid);
+    cancelled.current = false;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') cancelled.current = true;
+    };
+    watchEscape.current = onKey;
+    window.addEventListener('keydown', onKey);
+  };
+
+  const endStepDrag = (dropEffect: string) => {
+    if (watchEscape.current) {
+      window.removeEventListener('keydown', watchEscape.current);
+      watchEscape.current = null;
+    }
+    // Released outside every drop target in the pane: that is the gesture for
+    // taking a step out. Putting one in has always been a drag; taking one out
+    // required finding a 20px cross, which is the harder half of the same job.
+    if (draggingUid && dropEffect === 'none' && !cancelled.current) {
+      removeStepFromRecipe(draggingUid);
+    }
+    setDraggingUid(null);
+    setSlot(null);
+    setDropping(false);
+  };
 
   const onDrop = (event: React.DragEvent, index: number) => {
     event.preventDefault();
@@ -299,6 +339,17 @@ export function Pipeline() {
         dropping ? 'border-purple-line bg-purple-wash' : 'border-line',
       )}
     >
+      {removing && (
+        <p
+          role="status"
+          className="mb-1.5 flex items-center gap-1.5 text-micro font-medium"
+          style={{ color: 'var(--red)' }}
+        >
+          <Trash2 size={12} aria-hidden="true" />
+          {t.recipe.dropToRemove}
+        </p>
+      )}
+
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <StepBadge step={2} />
@@ -412,15 +463,15 @@ export function Pipeline() {
             <span
               draggable
               onDragStart={(event) => {
-                setDraggingUid(step.uid);
+                startStepDrag(step.uid);
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', step.uid);
               }}
-              onDragEnd={() => {
-                setDraggingUid(null);
-                setSlot(null);
-              }}
-              className={cx('cursor-grab active:cursor-grabbing', draggingUid === step.uid && 'opacity-30')}
+              onDragEnd={(event) => endStepDrag(event.dataTransfer.dropEffect)}
+              className={cx(
+                'cursor-grab transition-opacity active:cursor-grabbing',
+                draggingUid === step.uid && (removing ? 'opacity-20' : 'opacity-30'),
+              )}
             >
               <Node index={index} />
             </span>

@@ -115,7 +115,17 @@ describe('catalogue integrity', () => {
         expect(typeof result.output, `${op.name} returned a non-string`).toBe('string');
       }
     }
-  }, 120000);
+    /*
+   * Four minutes, for a test that takes ninety seconds.
+   *
+   * It runs seven hostile inputs through every one of the five hundred
+   * operations, which is genuinely expensive and worth every second — it is the
+   * test that says none of them can be made to throw. At a 120s budget it was
+   * passing alone and failing inside a full run whenever the machine was also
+   * doing something else, which is the flake I had been attributing to nothing
+   * in particular. The headroom is for the load, not for the work.
+   */
+}, 240000);
 });
 
 describe('round trips', () => {
