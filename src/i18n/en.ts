@@ -77,7 +77,9 @@ export const t = {
     dropToRemove: 'Release outside the recipe to remove this step',
     moveUp: 'Move step up',
     moveDown: 'Move step down',
-    drag: 'Drag to reorder',
+    drag: 'Drag to reorder, or drag out of the recipe to remove',
+    dragOrKeys: (name: string, at: number, of: number) =>
+      `${name}, step ${at} of ${of}. Drag to reorder, or use the arrow keys.`,
     disable: 'Disable step',
     enable: 'Enable step',
     setBreakpoint: 'Pause before this step',
