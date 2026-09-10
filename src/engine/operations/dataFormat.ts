@@ -1,65 +1,37 @@
 import { OperationError } from '../types';
-import { asBytes, bytesToLatin1, latin1ToBytes } from '../core/bytes';
+import { asBytes, bytesToLatin1 } from '../core/bytes';
+import { decodeBaseN, encodeBaseN } from '../core/alphabet';
+import { BASE32_ALPHABETS, BASE64_ALPHABETS, optionsFor } from '../core/alphabets64';
 import { arg, type Operation } from './types';
 
-const B64_STANDARD = 'A-Za-z0-9+/=';
-const B64_URLSAFE = 'A-Za-z0-9-_';
+/*
+ * How the bytes are separated. '0x' and '\\x' are prefixes rather than
+ * separators — `0xde 0xad` — which is how hex arrives from a debugger or a
+ * disassembler, and pasting that back in is the common case.
+ */
+const HEX_DELIMITERS: Record<string, string> = {
+  Space: ' ',
+  None: '',
+  Comma: ',',
+  'Semi-colon': ';',
+  Colon: ':',
+  'Line feed': '\n',
+  '0x': ' ',
+  '\\x': '',
+};
 
-function encodeBase64(bytes: Uint8Array, urlSafe: boolean): string {
-  const b64 = btoa(bytesToLatin1(bytes));
-  return urlSafe ? b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : b64;
+const B64_STANDARD = BASE64_ALPHABETS[0]!.spec;
+const B32_STANDARD = BASE32_ALPHABETS[0]!.spec;
+
+/** The two settings every base-N decode carries, spelled the same way. */
+function decodeSettings(args: Parameters<typeof arg>[0]) {
+  return {
+    removeNonAlphabet: arg(args, 'Remove non-alphabet chars', true),
+    strict: arg(args, 'Strict mode', false),
+  };
 }
 
-function decodeBase64(text: string, urlSafe: boolean): Uint8Array {
-  let cleaned = text.replace(/\s+/g, '');
-  if (urlSafe) cleaned = cleaned.replace(/-/g, '+').replace(/_/g, '/');
-  cleaned = cleaned.replace(/[^A-Za-z0-9+/=]/g, '');
-  while (cleaned.length % 4 !== 0) cleaned += '=';
-  try {
-    return latin1ToBytes(atob(cleaned));
-  } catch {
-    throw new OperationError('Input is not valid Base64.');
-  }
-}
-
-const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-
-function encodeBase32(bytes: Uint8Array): string {
-  let bits = 0;
-  let value = 0;
-  let out = '';
-  for (const byte of bytes) {
-    value = (value << 8) | byte;
-    bits += 8;
-    while (bits >= 5) {
-      out += B32_ALPHABET[(value >>> (bits - 5)) & 31];
-      bits -= 5;
-    }
-  }
-  if (bits > 0) out += B32_ALPHABET[(value << (5 - bits)) & 31];
-  while (out.length % 8 !== 0) out += '=';
-  return out;
-}
-
-function decodeBase32(text: string): Uint8Array {
-  const cleaned = text.replace(/[\s=]/g, '').toUpperCase();
-  let bits = 0;
-  let value = 0;
-  const out: number[] = [];
-  for (const char of cleaned) {
-    const index = B32_ALPHABET.indexOf(char);
-    if (index === -1) throw new OperationError(`'${char}' is not a Base32 character.`);
-    value = (value << 5) | index;
-    bits += 5;
-    if (bits >= 8) {
-      out.push((value >>> (bits - 8)) & 0xff);
-      bits -= 8;
-    }
-  }
-  return new Uint8Array(out);
-}
-
-const B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const B58_ALPHABET ='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 function encodeBase58(bytes: Uint8Array): string {
   if (bytes.length === 0) return '';
@@ -140,15 +112,14 @@ export const dataFormatOperations: Operation[] = [
     description: 'Decodes Base64-encoded data back to its original form.',
     aliases: ['b64', 'base64 decode', 'atob', 'unbase64'],
     args: [
-      {
-        name: 'Alphabet',
-        type: 'option',
-        value: B64_STANDARD,
-        options: [B64_STANDARD, B64_URLSAFE],
-      },
+      { name: 'Alphabet', type: 'option', value: B64_STANDARD, ...optionsFor(BASE64_ALPHABETS) },
+      { name: 'Remove non-alphabet chars', type: 'boolean', value: true },
+      { name: 'Strict mode', type: 'boolean', value: false },
     ],
     run: (input, args) =>
-      bytesToLatin1(decodeBase64(input, arg(args, 'Alphabet', B64_STANDARD) === B64_URLSAFE)),
+      bytesToLatin1(
+        decodeBaseN(input, arg(args, 'Alphabet', B64_STANDARD), 64, decodeSettings(args)),
+      ),
     detection: {
       /*
        * The length is `minLength`'s job, and it used to be done here as well —
@@ -175,15 +146,9 @@ export const dataFormatOperations: Operation[] = [
     description: 'Encodes data as Base64.',
     aliases: ['base64 encode', 'btoa'],
     args: [
-      {
-        name: 'Alphabet',
-        type: 'option',
-        value: B64_STANDARD,
-        options: [B64_STANDARD, B64_URLSAFE],
-      },
+      { name: 'Alphabet', type: 'option', value: B64_STANDARD, ...optionsFor(BASE64_ALPHABETS) },
     ],
-    run: (input, args) =>
-      encodeBase64(asBytes(input), arg(args, 'Alphabet', B64_STANDARD) === B64_URLSAFE),
+    run: (input, args) => encodeBaseN(asBytes(input), arg(args, 'Alphabet', B64_STANDARD), 64),
   },
   {
     id: 'from-base32',
@@ -191,8 +156,15 @@ export const dataFormatOperations: Operation[] = [
     category: 'Data format',
     description: 'Decodes Base32-encoded data (RFC 4648).',
     aliases: ['base32 decode', 'b32'],
-    args: [],
-    run: (input) => bytesToLatin1(decodeBase32(input)),
+    args: [
+      { name: 'Alphabet', type: 'option', value: B32_STANDARD, ...optionsFor(BASE32_ALPHABETS) },
+      { name: 'Remove non-alphabet chars', type: 'boolean', value: true },
+      { name: 'Strict mode', type: 'boolean', value: false },
+    ],
+    run: (input, args) =>
+      bytesToLatin1(
+        decodeBaseN(input, arg(args, 'Alphabet', B32_STANDARD), 32, decodeSettings(args)),
+      ),
     detection: {
       pattern: /^[A-Z2-7\s]{8,}={0,6}$/,
       entropy: [2.0, 5.2],
@@ -205,8 +177,10 @@ export const dataFormatOperations: Operation[] = [
     category: 'Data format',
     description: 'Encodes data as Base32 (RFC 4648).',
     aliases: ['base32 encode'],
-    args: [],
-    run: (input) => encodeBase32(asBytes(input)),
+    args: [
+      { name: 'Alphabet', type: 'option', value: B32_STANDARD, ...optionsFor(BASE32_ALPHABETS) },
+    ],
+    run: (input, args) => encodeBaseN(asBytes(input), arg(args, 'Alphabet', B32_STANDARD), 32),
   },
   {
     id: 'from-base58',
@@ -273,15 +247,35 @@ export const dataFormatOperations: Operation[] = [
     description: 'Converts data to its hexadecimal representation.',
     aliases: ['hex encode', 'str2hex'],
     args: [
-      { name: 'Delimiter', type: 'option', value: 'Space', options: ['None', 'Space', 'Comma'] },
+      {
+        name: 'Delimiter',
+        type: 'option',
+        value: 'Space',
+        options: ['Space', 'None', 'Comma', 'Semi-colon', 'Colon', 'Line feed', '0x', '\\x'],
+      },
+      {
+        name: 'Bytes per line',
+        type: 'number',
+        value: 0,
+        min: 0,
+        max: 1024,
+        hint: '0 for one unbroken line',
+      },
     ],
     run: (input, args) => {
-      const delimiter = { None: '', Space: ' ', Comma: ',' }[
-        String(arg(args, 'Delimiter', 'Space'))
-      ];
-      return Array.from(asBytes(input))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join(delimiter ?? ' ');
+      const name = String(arg(args, 'Delimiter', 'Space'));
+      const between = HEX_DELIMITERS[name] ?? ' ';
+      const prefix = name === '0x' ? '0x' : name === '\\x' ? '\\x' : '';
+      const perLine = Math.max(0, Math.trunc(Number(arg(args, 'Bytes per line', 0))));
+
+      const cells = Array.from(asBytes(input), (b) => prefix + b.toString(16).padStart(2, '0'));
+      if (perLine === 0) return cells.join(between);
+
+      const lines: string[] = [];
+      for (let i = 0; i < cells.length; i += perLine) {
+        lines.push(cells.slice(i, i + perLine).join(between));
+      }
+      return lines.join('\n');
     },
   },
   {

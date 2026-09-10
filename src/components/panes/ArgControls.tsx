@@ -46,11 +46,14 @@ export function ArgControl({ stepUid, arg, onChange }: Props) {
           onChange={(e) => onChange({ value: e.target.value })}
           className={fieldClass}
         >
-          {(arg.options ?? []).map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
+          {(arg.options ?? []).map((option) => {
+            const label = arg.optionLabels?.[option];
+            return (
+              <option key={option} value={option}>
+                {label ? `${label}: ${option}` : option}
+              </option>
+            );
+          })}
         </select>
       )}
 

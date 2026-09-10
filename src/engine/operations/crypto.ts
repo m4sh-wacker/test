@@ -1,6 +1,6 @@
 import { OperationError } from '../types';
 import { asBytes, bytesToLatin1, latin1ToBytes } from '../core/bytes';
-import type { Operation } from './types';
+import { arg, type Operation } from './types';
 import { parseKey } from './keys';
 
 function rotate(input: string, amount: number): string {
@@ -8,6 +8,40 @@ function rotate(input: string, amount: number): string {
   return input.replace(/[a-zA-Z]/g, (char) => {
     const base = char <= 'Z' ? 65 : 97;
     return String.fromCharCode(((char.charCodeAt(0) - base + shift) % 26) + base);
+  });
+}
+
+interface RotateOptions {
+  amount: number;
+  lower: boolean;
+  upper: boolean;
+  digits: boolean;
+}
+
+/**
+ * Rotation with the cases and the digits under separate control.
+ *
+ * Rotating one case and not the other is how a mixed-case key is recovered by
+ * hand, and ROT5 over the digits is a separate convention that turns up beside
+ * ROT13 often enough to want in the same operation — ROT13.5 or ROT18. Doing
+ * all three unconditionally is the special case, not the general one.
+ */
+function rotateSelective(input: string, options: RotateOptions): string {
+  const letters = ((options.amount % 26) + 26) % 26;
+  // Digits rotate through ten, not twenty-six: ROT13 over digits is ROT3.
+  const numbers = ((options.amount % 10) + 10) % 10;
+
+  return input.replace(/[a-zA-Z0-9]/g, (char) => {
+    const code = char.charCodeAt(0);
+
+    if (code >= 48 && code <= 57) {
+      return options.digits ? String.fromCharCode(((code - 48 + numbers) % 10) + 48) : char;
+    }
+    const upper = code <= 90;
+    if (upper ? !options.upper : !options.lower) return char;
+
+    const base = upper ? 65 : 97;
+    return String.fromCharCode(((code - base + letters) % 26) + base);
   });
 }
 
@@ -28,8 +62,19 @@ export const cryptoOperations: Operation[] = [
     category: 'Encryption / Encoding',
     description: 'Rotates each letter 13 places through the alphabet.',
     aliases: ['rot', 'caesar 13'],
-    args: [],
-    run: (input) => rotate(input, 13),
+    args: [
+      { name: 'Rotate lower case', type: 'boolean', value: true },
+      { name: 'Rotate upper case', type: 'boolean', value: true },
+      { name: 'Rotate numbers', type: 'boolean', value: false },
+      { name: 'Amount', type: 'number', value: 13, min: -25, max: 25 },
+    ],
+    run: (input, args) =>
+      rotateSelective(input, {
+        amount: Number(arg(args, 'Amount', 13)),
+        lower: arg(args, 'Rotate lower case', true),
+        upper: arg(args, 'Rotate upper case', true),
+        digits: arg(args, 'Rotate numbers', false),
+      }),
   },
   {
     id: 'rot',

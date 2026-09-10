@@ -13,6 +13,14 @@ export interface OperationArg {
   value: string | number | boolean;
   /** For `option`. */
   options?: string[];
+  /**
+   * Display names for `options`, keyed by value.
+   *
+   * `./0-9A-Za-z` is either UNIX crypt or a typo and the characters cannot tell
+   * you which. The value stays the value — recipes and share links carry it
+   * unchanged — and the label is what a person reads.
+   */
+  optionLabels?: Record<string, string>;
   /** For `toggleString`, e.g. ['UTF-8', 'Hex', 'Base64']. */
   toggleValues?: string[];
   toggleValue?: string;
